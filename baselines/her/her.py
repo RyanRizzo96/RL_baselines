@@ -11,6 +11,7 @@ from baselines.common.mpi_moments import mpi_moments
 import baselines.her.experiment.config as config
 from baselines.her.rollout import RolloutWorker
 
+
 def mpi_average(value):
     if not isinstance(value, list):
         value = [value]
