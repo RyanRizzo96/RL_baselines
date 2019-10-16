@@ -34,3 +34,6 @@ src
 .cache
 
 MUJOCO_LOG.TXT
+*.lan
+*.txt
+*.csv
