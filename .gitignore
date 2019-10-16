@@ -37,3 +37,4 @@ MUJOCO_LOG.TXT
 *.lan
 *.txt
 *.csv
+*.json
