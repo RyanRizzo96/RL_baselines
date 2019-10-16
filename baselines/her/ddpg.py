@@ -157,9 +157,9 @@ class DDPG(object):
         else:
             return ret
 
-    def init_demo_buffer(self, demoDataFile, update_stats=True): #function that initializes the demo buffer
+    def init_demo_buffer(self, demoDataFile, update_stats=True): # function that initializes the demo buffer
 
-        demoData = np.load(demoDataFile) #load the demonstration data from data file
+        demoData = np.load(demoDataFile) # load the demonstration data from data file
         info_keys = [key.replace('info_', '') for key in self.input_dims.keys() if key.startswith('info_')]
         info_values = [np.empty((self.T - 1, 1, self.input_dims['info_' + key]), np.float32) for key in info_keys]
 
@@ -360,7 +360,7 @@ class DDPG(object):
 
         if self.bc_loss ==1 and self.q_filter == 1 : # train with demonstrations and use bc_loss and q_filter both
             maskMain = tf.reshape(tf.boolean_mask(self.main.Q_tf > self.main.Q_pi_tf, mask), [-1]) #where is the demonstrator action better than actor action according to the critic? choose those samples only
-            #define the cloning loss on the actor's actions only on the samples which adhere to the above masks
+            # define the cloning loss on the actor's actions only on the samples which adhere to the above masks
             self.cloning_loss_tf = tf.reduce_sum(tf.square(tf.boolean_mask(tf.boolean_mask((self.main.pi_tf), mask), maskMain, axis=0) - tf.boolean_mask(tf.boolean_mask((batch_tf['u']), mask), maskMain, axis=0)))
             self.pi_loss_tf = -self.prm_loss_weight * tf.reduce_mean(self.main.Q_pi_tf) #primary loss scaled by it's respective weight prm_loss_weight
             self.pi_loss_tf += self.prm_loss_weight * self.action_l2 * tf.reduce_mean(tf.square(self.main.pi_tf / self.max_u)) #L2 loss on action values scaled by the same weight prm_loss_weight
@@ -372,7 +372,7 @@ class DDPG(object):
             self.pi_loss_tf += self.prm_loss_weight * self.action_l2 * tf.reduce_mean(tf.square(self.main.pi_tf / self.max_u))
             self.pi_loss_tf += self.aux_loss_weight * self.cloning_loss_tf
 
-        else: #If  not training with demonstrations
+        else: # If  not training with demonstrations
             self.pi_loss_tf = -tf.reduce_mean(self.main.Q_pi_tf)
             self.pi_loss_tf += self.action_l2 * tf.reduce_mean(tf.square(self.main.pi_tf / self.max_u))
 
