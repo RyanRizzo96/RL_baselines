@@ -11,4 +11,4 @@ export OPENAI_LOG_FORMAT=stdout,log,csv,tensorboard
 
 #Use --env not env for HER. Seems like for other algs this is not the same
 #python3 -m baselines.run --alg=her env=FetchReach-v1 --num_timesteps=1e5
-python3 -m baselines.run --alg=her --env=FetchReach-v1 --num_timesteps=5000
+python3 -m baselines.run --algher --env=FetchReach-v1 --num_timesteps=5000
