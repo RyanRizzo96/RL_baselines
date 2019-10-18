@@ -137,6 +137,7 @@ class RunningAvg(object):
         """Get the current estimate"""
         return self._value
 
+
 def boolean_flag(parser, name, default=False, help=None):
     """Add a boolean flag to argparse parser.
 
