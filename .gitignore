@@ -38,3 +38,4 @@ MUJOCO_LOG.TXT
 *.txt
 *.csv
 *.json
+*.xls
