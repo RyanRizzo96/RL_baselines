@@ -8,6 +8,7 @@ from collections import defaultdict, namedtuple
 from baselines.bench import monitor
 from baselines.logger import read_json, read_csv
 
+
 def smooth(y, radius, mode='two_sided', valid_only=False):
     '''
     Smooth signal y, where radius is determines the size of the window
@@ -35,6 +36,7 @@ def smooth(y, radius, mode='two_sided', valid_only=False):
         if valid_only:
             out[:radius] = np.nan
     return out
+
 
 def one_sided_ema(xolds, yolds, low=None, high=None, n=512, decay_steps=1., low_counts_threshold=1e-8):
     '''
@@ -73,7 +75,6 @@ def one_sided_ema(xolds, yolds, low=None, high=None, n=512, decay_steps=1., low_
     assert xolds[-1] >= high, 'high = {} > xolds[-1] = {}  - extrapolation not permitted!'.format(high, xolds[-1])
     assert len(xolds) == len(yolds), 'length of xolds ({}) and yolds ({}) do not match!'.format(len(xolds), len(yolds))
 
-
     xolds = xolds.astype('float64')
     yolds = yolds.astype('float64')
 
@@ -107,6 +108,7 @@ def one_sided_ema(xolds, yolds, low=None, high=None, n=512, decay_steps=1., low_
     ys[count_ys < low_counts_threshold] = np.nan
 
     return xnews, ys, count_ys
+
 
 def symmetric_ema(xolds, yolds, low=None, high=None, n=512, decay_steps=1., low_counts_threshold=1e-8):
     '''
@@ -146,8 +148,10 @@ def symmetric_ema(xolds, yolds, low=None, high=None, n=512, decay_steps=1., low_
     ys[count_ys < low_counts_threshold] = np.nan
     return xs, ys, count_ys
 
+
 Result = namedtuple('Result', 'monitor progress dirname metadata')
 Result.__new__.__defaults__ = (None,) * len(Result._fields)
+
 
 def load_results(root_dir_or_dirs, enable_progress=True, enable_monitor=True, verbose=False):
     '''
@@ -229,6 +233,7 @@ def default_xy_fn(r):
     y = smooth(r.monitor.r, radius=10)
     return x,y
 
+
 def default_split_fn(r):
     import re
     # match name between slash and -<digits> at the end of the string
@@ -236,6 +241,7 @@ def default_split_fn(r):
     match = re.search(r'[^/-]+(?=(-\d+)?\Z)', r.dirname)
     if match:
         return match.group(0)
+
 
 def plot_results(
     allresults, *,
