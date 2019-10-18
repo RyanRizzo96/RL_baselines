@@ -2,6 +2,7 @@ from .monitor import Monitor
 import gym
 import json
 
+
 def test_monitor():
     import pandas
     import os
