@@ -228,6 +228,7 @@ class TensorBoardOutputFormat(KVWriter):
         self.event_pb2 = event_pb2
         self.pywrap_tensorflow = pywrap_tensorflow
         self.writer = pywrap_tensorflow.EventsWriter(compat.as_bytes(path))
+
     def writekvs(self, kvs):
         def summary_val(k, v):
             kwargs = {'tag': k, 'simple_value': float(v)}
@@ -273,6 +274,8 @@ def make_output_format(format, ev_dir, log_suffix=''):
 # ================================================================
 # API
 # ================================================================
+
+
 def logkv(key, val):
     """
     Log a value of some diagnostic
