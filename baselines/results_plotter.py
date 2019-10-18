@@ -5,6 +5,7 @@ matplotlib.use('TkAgg') # Can change to 'Agg' for non-interactive mode
 import matplotlib.pyplot as plt
 plt.rcParams['svg.fonttype'] = 'none'
 
+from baselines.bench.monitor import load_results
 from baselines.common import plot_util
 
 X_TIMESTEPS = 'timesteps'
@@ -90,7 +91,7 @@ def plot_curves(xy_list, xaxis, title):
     plt.xlim(minx, maxx)
     plt.title(title)
     plt.xlabel(xaxis)
-    plt.ylabel("Episode Rewards")
+    plt.ylabel("Episode Rewards 1")
     plt.tight_layout()
 
 
