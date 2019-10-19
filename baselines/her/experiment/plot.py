@@ -72,7 +72,7 @@ for curr_path in paths:
     with open(os.path.join(curr_path, 'params.json'), 'r') as f:
         params = json.load(f)
 
-    success_rate = np.array(results['test/success_rate'])
+    success_rate = np.array(results['test/success_rate(1)'])
     epoch = np.array(results['epoch']) + 1
     env_id = params['env_name']
     replay_strategy = params['replay_strategy']
@@ -115,6 +115,6 @@ for env_id in sorted(data.keys()):
         plt.fill_between(xs[0], np.nanpercentile(ys, 25, axis=0), np.nanpercentile(ys, 75, axis=0), alpha=0.25)
     plt.title(env_id)
     plt.xlabel('Epoch')
-    plt.ylabel('Median Success Rate')
+    plt.ylabel('Median Success Rate(1)')
     plt.legend()
     plt.savefig(os.path.join(args.dir, 'fig_{}.png'.format(env_id)))
