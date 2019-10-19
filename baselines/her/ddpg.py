@@ -19,6 +19,7 @@ def dims_to_shapes(input_dims):
 
 global DEMO_BUFFER #buffer for demonstrations
 
+
 class DDPG(object):
     @store_args
     def __init__(self, input_dims, buffer_size, hidden, layers, network_class, polyak, batch_size,
@@ -124,7 +125,6 @@ class DDPG(object):
         actions = self.get_actions(obs['observation'], obs['achieved_goal'], obs['desired_goal'])
         return actions, None, None, None
 
-
     def get_actions(self, o, ag, g, noise_eps=0., random_eps=0., use_target_net=False,
                     compute_Q=False):
         o, g = self._preprocess_og(o, ag, g)
@@ -177,7 +177,6 @@ class DDPG(object):
                 achieved_goals.append([demo_data_obs[epsd][transition].get('achieved_goal')])
                 for idx, key in enumerate(info_keys):
                     info_values[idx][transition, i] = demo_data_info[epsd][transition][key]
-
 
             obs.append([demo_data_obs[epsd][self.T - 1].get('observation')])
             achieved_goals.append([demo_data_obs[epsd][self.T - 1].get('achieved_goal')])
@@ -332,7 +331,7 @@ class DDPG(object):
                                 for i, key in enumerate(self.stage_shapes.keys())])
         batch_tf['r'] = tf.reshape(batch_tf['r'], [-1, 1])
 
-        #choose only the demo buffer samples
+        # choose only the demo buffer samples
         mask = np.concatenate((np.zeros(self.batch_size - self.demo_batch_size), np.ones(self.demo_batch_size)), axis = 0)
 
         # networks
@@ -432,6 +431,7 @@ class DDPG(object):
             # We don't need this for playing the policy.
             state['sample_transitions'] = None
 
+        # Initialise DDPG
         self.__init__(**state)
         # set up stats (they are overwritten in __init__)
         for k, v in state.items():
@@ -445,4 +445,3 @@ class DDPG(object):
 
     def save(self, save_path):
         tf_util.save_variables(save_path)
-
