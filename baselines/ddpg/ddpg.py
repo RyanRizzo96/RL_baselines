@@ -18,6 +18,7 @@ try:
 except ImportError:
     MPI = None
 
+
 def learn(network, env,
           seed=None,
           total_timesteps=None,
@@ -114,8 +115,6 @@ def learn(network, env,
     t = 0 # scalar
 
     epoch = 0
-
-
 
     start_time = time.time()
 
@@ -270,6 +269,5 @@ def learn(network, env,
             if eval_env and hasattr(eval_env, 'get_state'):
                 with open(os.path.join(logdir, 'eval_env_state.pkl'), 'wb') as f:
                     pickle.dump(eval_env.get_state(), f)
-
 
     return agent
