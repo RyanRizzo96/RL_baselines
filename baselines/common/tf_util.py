@@ -6,6 +6,7 @@ import functools
 import collections
 import multiprocessing
 
+
 def switch(condition, then_expression, else_expression):
     """Switches between two operations depending on a scalar value (int or bool).
     Note that both `then_expression` and `else_expression`
@@ -27,6 +28,7 @@ def switch(condition, then_expression, else_expression):
 # Extras
 # ================================================================
 
+
 def lrelu(x, leak=0.2):
     f1 = 0.5 * (1 + leak)
     f2 = 0.5 * (1 - leak)
@@ -36,17 +38,26 @@ def lrelu(x, leak=0.2):
 # Mathematical utils
 # ================================================================
 
-def huber_loss(x, delta=1.0):
-    """Reference: https://en.wikipedia.org/wiki/Huber_loss"""
+
+def huber_loss(tensor, delta=1.0):
+    """
+    Reference: https://en.wikipedia.org/wiki/Huber_loss
+
+    :param tensor: (TensorFlow Tensor) the input value
+    :param delta: (float) huber loss delta value
+    :return: (TensorFlow Tensor) huber loss output
+    """
     return tf.where(
-        tf.abs(x) < delta,
-        tf.square(x) * 0.5,
-        delta * (tf.abs(x) - 0.5 * delta)
+        tf.abs(tensor) < delta,
+        tf.square(tensor) * 0.5,
+        delta * (tf.abs(tensor) - 0.5 * delta)
     )
+
 
 # ================================================================
 # Global session
 # ================================================================
+
 
 def get_session(config=None):
     """Get default session or create one with a given config"""
@@ -54,6 +65,7 @@ def get_session(config=None):
     if sess is None:
         sess = make_session(config=config, make_default=True)
     return sess
+
 
 def make_session(config=None, num_cpu=None, make_default=False, graph=None):
     """Returns a session that will use <num_cpu> CPU's only"""
@@ -71,9 +83,11 @@ def make_session(config=None, num_cpu=None, make_default=False, graph=None):
     else:
         return tf.Session(config=config, graph=graph)
 
+
 def single_threaded_session():
     """Returns a session which will only use a single CPU"""
     return make_session(num_cpu=1)
+
 
 def in_session(f):
     @functools.wraps(f)
@@ -82,7 +96,9 @@ def in_session(f):
             f(*args, **kwargs)
     return newfunc
 
+
 ALREADY_INITIALIZED = set()
+
 
 def initialize():
     """Initialize all the uninitialized variables in the global scope."""
@@ -94,12 +110,14 @@ def initialize():
 # Model components
 # ================================================================
 
+
 def normc_initializer(std=1.0, axis=0):
     def _initializer(shape, dtype=None, partition_info=None):  # pylint: disable=W0613
         out = np.random.randn(*shape).astype(dtype.as_numpy_dtype)
         out *= std / np.sqrt(np.square(out).sum(axis=axis, keepdims=True))
         return tf.constant(out)
     return _initializer
+
 
 def conv2d(x, num_filters, name, filter_size=(3, 3), stride=(1, 1), pad="SAME", dtype=tf.float32, collections=None,
            summary_tag=None):
@@ -134,8 +152,10 @@ def conv2d(x, num_filters, name, filter_size=(3, 3), stride=(1, 1), pad="SAME", 
 # Theano-like Function
 # ================================================================
 
+
 def function(inputs, outputs, updates=None, givens=None):
-    """Just like Theano function. Take a bunch of tensorflow placeholders and expressions
+    """
+    Just like Theano function. Take a bunch of tensorflow placeholders and expressions
     computed based on those placeholders and produces f(inputs) -> outputs. Function f takes
     values to be fed to the input's placeholders and produces the values of the expressions
     in outputs.
@@ -181,6 +201,17 @@ def function(inputs, outputs, updates=None, givens=None):
 
 class _Function(object):
     def __init__(self, inputs, outputs, updates, givens):
+        """
+        Theano like function
+
+        :param inputs: (TensorFlow Tensor or Object with make_feed_dict) list of input arguments
+        :param outputs: (TensorFlow Tensor) list of outputs or a single output to be returned from function. Returned
+            value will also have the same shape.
+        :param updates: ([tf.Operation] or tf.Operation)
+        list of update functions or single update function that will be run whenever
+        the function is called. The return is ignored.
+        :param givens: (dict) the values known for the output
+        """
         for inpt in inputs:
             if not hasattr(inpt, 'make_feed_dict') and not (type(inpt) is tf.Tensor and len(inpt.op.inputs) == 0):
                 assert False, "inputs should all be placeholders, constants, or have a make_feed_dict method"
@@ -215,19 +246,49 @@ class _Function(object):
 # Flat vectors
 # ================================================================
 
-def var_shape(x):
-    out = x.get_shape().as_list()
+
+def var_shape(tensor):
+    """
+    get TensorFlow Tensor shape
+
+    :param tensor: (TensorFlow Tensor) the input tensor
+    :return: ([int]) the shape
+    """
+    out = tensor.get_shape().as_list()
     assert all(isinstance(a, int) for a in out), \
         "shape function assumes that shape is fully known"
     return out
 
-def numel(x):
-    return intprod(var_shape(x))
 
-def intprod(x):
-    return int(np.prod(x))
+def numel(tensor):
+    """
+    get TensorFlow Tensor's number of elements
+
+    :param tensor: (TensorFlow Tensor) the input tensor
+    :return: (int) the number of elements
+    """
+    return intprod(var_shape(tensor))
+
+
+def intprod(tensor):
+    """
+    calculates the product of all the elements in a list
+
+    :param tensor: ([Number]) the list of elements
+    :return: (int) the product truncated
+    """
+    return int(np.prod(tensor))
+
 
 def flatgrad(loss, var_list, clip_norm=None):
+    """
+    calculates the gradient and flattens it
+
+    :param loss: (float) the loss value
+    :param var_list: ([TensorFlow Tensor]) the variables
+    :param clip_norm: (float) clip the gradients (disabled if None)
+    :return: ([TensorFlow Tensor]) flattend gradient
+    """
     grads = tf.gradients(loss, var_list)
     if clip_norm is not None:
         grads = [tf.clip_by_norm(grad, clip_norm=clip_norm) for grad in grads]
@@ -235,6 +296,7 @@ def flatgrad(loss, var_list, clip_norm=None):
         tf.reshape(grad if grad is not None else tf.zeros_like(v), [numel(v)])
         for (v, grad) in zip(var_list, grads)
     ])
+
 
 class SetFromFlat(object):
     def __init__(self, var_list, dtype=tf.float32):
@@ -254,12 +316,14 @@ class SetFromFlat(object):
     def __call__(self, theta):
         tf.get_default_session().run(self.op, feed_dict={self.theta: theta})
 
+
 class GetFlat(object):
     def __init__(self, var_list):
         self.op = tf.concat(axis=0, values=[tf.reshape(v, [numel(v)]) for v in var_list])
 
     def __call__(self):
         return tf.get_default_session().run(self.op)
+
 
 def flattenallbut0(x):
     return tf.reshape(x, [-1, intprod(x.get_shape().as_list()[1:])])
@@ -268,7 +332,9 @@ def flattenallbut0(x):
 # TF placeholders management
 # ============================================================
 
+
 _PLACEHOLDER_CACHE = {}  # name -> (placeholder, dtype, shape)
+
 
 def get_placeholder(name, dtype, shape):
     if name in _PLACEHOLDER_CACHE:
@@ -282,14 +348,14 @@ def get_placeholder(name, dtype, shape):
     _PLACEHOLDER_CACHE[name] = (out, dtype, shape)
     return out
 
+
 def get_placeholder_cached(name):
     return _PLACEHOLDER_CACHE[name][0]
-
-
 
 # ================================================================
 # Diagnostics
 # ================================================================
+
 
 def display_var_info(vars):
     from baselines import logger
@@ -322,12 +388,14 @@ def get_available_gpus(session_config=None):
 # Saving variables
 # ================================================================
 
+
 def load_state(fname, sess=None):
     from baselines import logger
     logger.warn('load_state method is deprecated, please use load_variables instead')
     sess = sess or get_session()
     saver = tf.train.Saver()
     saver.restore(tf.get_default_session(), fname)
+
 
 def save_state(fname, sess=None):
     from baselines import logger
@@ -342,6 +410,7 @@ def save_state(fname, sess=None):
 # The methods above and below are clearly doing the same thing, and in a rather similar way
 # TODO: ensure there is no subtle differences and remove one
 
+
 def save_variables(save_path, variables=None, sess=None):
     import joblib
     sess = sess or get_session()
@@ -353,6 +422,7 @@ def save_variables(save_path, variables=None, sess=None):
     if any(dirname):
         os.makedirs(dirname, exist_ok=True)
     joblib.dump(save_dict, save_path)
+
 
 def load_variables(load_path, variables=None, sess=None):
     import joblib
@@ -374,6 +444,8 @@ def load_variables(load_path, variables=None, sess=None):
 # ================================================================
 # Shape adjustment for feeding into tf placeholders
 # ================================================================
+
+
 def adjust_shape(placeholder, data):
     '''
     adjust shape of the data to the shape of the placeholder if possible.
@@ -422,6 +494,7 @@ def _squeeze_shape(shape):
 # ================================================================
 # Tensorboard interfacing
 # ================================================================
+
 
 def launch_tensorboard_in_background(log_dir):
     '''
