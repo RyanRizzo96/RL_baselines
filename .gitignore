@@ -39,3 +39,10 @@ MUJOCO_LOG.TXT
 *.csv
 *.json
 *.xls
+.models/FetchReach_5k_her
+.models/FetchReach_10k_her
+.models/FetchPush_5k_her
+.models/FetchPush_50k_her
+.models/FetchReach_10k_her
+.models/FetchReach_10k_her
+.models/FetchReach_5k_her
