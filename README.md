@@ -1,10 +1,8 @@
-**Status:** Maintenance (expect bug fixes and minor updates)
 
-<img src="data/logo.jpg" width=25% align="right" /> [![Build status](https://travis-ci.org/openai/baselines.svg?branch=master)](https://travis-ci.org/openai/baselines)
 
 # Baselines
 
-OpenAI Baselines is a set of high-quality implementations of reinforcement learning algorithms.
+RLBaselines is built upon OpenAI Baselines and uses improved documentation and code quality from Stable Baselines.
 
 These algorithms will make it easier for the research community to replicate, refine, and identify new ideas, and will create good baselines to build research on top of. Our DQN implementation and its variants are roughly on par with the scores in published papers. We expect they will be used as a base around which new ideas can be added, and as a tool for comparing a new approach against existing ones. 
 
@@ -45,7 +43,7 @@ The master branch supports Tensorflow from version 1.4 to 1.14. For Tensorflow 2
 ## Installation
 - Clone the repo and cd into it:
     ```bash
-    git clone https://github.com/openai/baselines.git
+    git clone https://github.com/RyanRizzo96/RL_baselines
     cd baselines
     ```
 - If you don't have TensorFlow installed already, install your favourite flavor of TensorFlow. In most cases, 
@@ -130,25 +128,8 @@ For examples on how to load and display the training data, see [here](docs/viz/v
 
 ## Subpackages
 
-- [A2C](baselines/a2c)
-- [ACER](baselines/acer)
-- [ACKTR](baselines/acktr)
 - [DDPG](baselines/ddpg)
-- [DQN](baselines/deepq)
-- [GAIL](baselines/gail)
 - [HER](baselines/her)
-- [PPO1](baselines/ppo1) (obsolete version, left here temporarily)
-- [PPO2](baselines/ppo2) 
-- [TRPO](baselines/trpo_mpi)
-
-
-
-## Benchmarks
-Results of benchmarks on Mujoco (1M timesteps) and Atari (10M timesteps) are available 
-[here for Mujoco](https://htmlpreview.github.com/?https://github.com/openai/baselines/blob/master/benchmarks_mujoco1M.htm) 
-and
-[here for Atari](https://htmlpreview.github.com/?https://github.com/openai/baselines/blob/master/benchmarks_atari10M.htm) 
-respectively. Note that these results may be not on the latest version of the code, particular commit hash with which results were obtained is specified on the benchmarks page. 
 
 To cite this repository in publications:
 
