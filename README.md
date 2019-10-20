@@ -131,14 +131,6 @@ For examples on how to load and display the training data, see [here](docs/viz/v
 - [DDPG](baselines/ddpg)
 - [HER](baselines/her)
 
-
-## Benchmarks
-Results of benchmarks on Mujoco (1M timesteps) and Atari (10M timesteps) are available 
-[here for Mujoco](https://htmlpreview.github.com/?https://github.com/openai/baselines/blob/master/benchmarks_mujoco1M.htm) 
-and
-[here for Atari](https://htmlpreview.github.com/?https://github.com/openai/baselines/blob/master/benchmarks_atari10M.htm) 
-respectively. Note that these results may be not on the latest version of the code, particular commit hash with which results were obtained is specified on the benchmarks page. 
-
 To cite this repository in publications:
 
     @misc{baselines,
