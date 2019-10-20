@@ -1,6 +1,9 @@
 from baselines.common import plot_util as plot
 import matplotlib.pyplot as plt
 import numpy as np
+import os
+
+# osprint(os.environ['OPENAI_LOGDIR'])
 
 OPENAI_LOGDIR=".log/FetchReach/HER5k/trial1"
 
