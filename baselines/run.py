@@ -30,6 +30,7 @@ except ImportError:
     roboschool = None
 
 _game_envs = defaultdict(set)
+
 for env in gym.envs.registry.all():
     # TODO: solve this with regexes
     env_type = env.entry_point.split(':')[0].split('.')[-1]
@@ -55,7 +56,10 @@ def train(args, extra_args):
     print('env_type: {}'.format(env_type))
 
     total_timesteps = int(args.num_timesteps)
+    print('total_timesteps: {}'.format(total_timesteps))
+
     seed = args.seed
+    print('seed: {}'.format(seed))
 
     learn = get_learn_function(args.alg)
     alg_kwargs = get_learn_function_defaults(args.alg, env_type)
@@ -119,6 +123,7 @@ def build_env(args):
     return env
 
 
+# Environment argument is processed here
 def get_env_type(args):
     env_id = args.env
 
@@ -155,20 +160,17 @@ def get_default_network(env_type):
 
 def get_alg_module(alg, submodule=None):
     submodule = submodule or alg
-    try:
-        # first try to import the alg module from baselines
-        alg_module = import_module('.'.join(['baselines', alg, submodule]))
-    except ImportError:
-        # then from rl_algs
-        alg_module = import_module('.'.join(['rl_' + 'algs', alg, submodule]))
-
+    # try to import the alg module from baselines
+    alg_module = import_module('.'.join(['baselines', alg, submodule]))
     return alg_module
 
 
+# This function returns the algorithm to be usd during training
 def get_learn_function(alg):
     return get_alg_module(alg).learn
 
 
+# function to get degault arguments
 def get_learn_function_defaults(alg, env_type):
     try:
         alg_defaults = get_alg_module(alg, 'defaults')
@@ -214,6 +216,7 @@ def main(args):
         rank = MPI.COMM_WORLD.Get_rank()
         configure_logger(args.log_path, format_strs=[])
 
+    # All execution passes through here
     model, env = train(args, extra_args)
 
     if args.save_path is not None and rank == 0:
