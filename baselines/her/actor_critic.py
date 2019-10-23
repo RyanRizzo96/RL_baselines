@@ -7,7 +7,6 @@ class ActorCritic:
     def __init__(self, inputs_tf, dimo, dimg, dimu, max_u, o_stats, g_stats, hidden, layers,
                  **kwargs):
         """The actor-critic network and related training code.
-
         Args:
             inputs_tf (dict of tensors): all necessary inputs for the network: the
                 observation (o), the goal (g), and the action (u)
@@ -42,3 +41,4 @@ class ActorCritic:
             input_Q = tf.concat(axis=1, values=[o, g, self.u_tf / self.max_u])
             self._input_Q = input_Q  # exposed for tests
             self.Q_tf = nn(input_Q, [self.hidden] * self.layers + [1], reuse=True)
+

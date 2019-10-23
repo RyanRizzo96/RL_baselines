@@ -13,7 +13,6 @@ class RolloutWorker:
                  exploit=False, use_target_net=False, compute_Q=False, noise_eps=0,
                  random_eps=0, history_len=100, render=False, monitor=False, **kwargs):
         """Rollout worker generates experience by interacting with one or many environments.
-
         Args:
             venv: vectorized gym environments.
             policy (object): the policy that is used to act
@@ -166,4 +165,3 @@ class RolloutWorker:
             return [(prefix + '/' + key, val) for key, val in logs]
         else:
             return logs
-

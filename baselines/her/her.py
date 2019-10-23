@@ -33,7 +33,7 @@ def train(*, policy, rollout_worker, evaluator,
     logger.info("Training...")
     best_success_rate = -1
 
-    if policy.bc_loss == 1: policy.init_demo_buffer(demo_file) #initialize demo buffer if training with demonstrations
+    if policy.bc_loss == 1: policy.init_demo_buffer(demo_file)  # initialize demo buffer if training with demonstrations
 
     # num_timesteps = n_epochs * n_cycles * rollout_length * number of rollout workers
     for epoch in range(n_epochs):
@@ -138,7 +138,10 @@ def learn(*, network, env, total_timesteps,
         logger.warn('****************')
         logger.warn()
 
+    # Before call to DDPG we configure the dimensions of the observation, action and goal
     dims = config.configure_dims(params)
+
+    # Call to initialize DDPG
     policy = config.configure_ddpg(dims=dims, params=params, clip_return=clip_return)
     if load_path is not None:
         tf_util.load_variables(load_path)

@@ -19,7 +19,6 @@ def dims_to_shapes(input_dims):
 
 global DEMO_BUFFER #buffer for demonstrations
 
-
 class DDPG(object):
     @store_args
     def __init__(self, input_dims, buffer_size, hidden, layers, network_class, polyak, batch_size,
@@ -29,7 +28,6 @@ class DDPG(object):
                  sample_transitions, gamma, reuse=False, **kwargs):
         """Implementation of DDPG that is used in combination with Hindsight Experience Replay (HER).
             Added functionality to use demonstrations for training to Overcome exploration problem.
-
         Args:
             input_dims (dict of ints): dimensions for the observation (o), the goal (g), and the
                 actions (u)
@@ -125,6 +123,7 @@ class DDPG(object):
         actions = self.get_actions(obs['observation'], obs['achieved_goal'], obs['desired_goal'])
         return actions, None, None, None
 
+
     def get_actions(self, o, ag, g, noise_eps=0., random_eps=0., use_target_net=False,
                     compute_Q=False):
         o, g = self._preprocess_og(o, ag, g)
@@ -157,9 +156,9 @@ class DDPG(object):
         else:
             return ret
 
-    def init_demo_buffer(self, demoDataFile, update_stats=True): # function that initializes the demo buffer
+    def init_demo_buffer(self, demoDataFile, update_stats=True): #function that initializes the demo buffer
 
-        demoData = np.load(demoDataFile) # load the demonstration data from data file
+        demoData = np.load(demoDataFile) #load the demonstration data from data file
         info_keys = [key.replace('info_', '') for key in self.input_dims.keys() if key.startswith('info_')]
         info_values = [np.empty((self.T - 1, 1, self.input_dims['info_' + key]), np.float32) for key in info_keys]
 
@@ -177,6 +176,7 @@ class DDPG(object):
                 achieved_goals.append([demo_data_obs[epsd][transition].get('achieved_goal')])
                 for idx, key in enumerate(info_keys):
                     info_values[idx][transition, i] = demo_data_info[epsd][transition][key]
+
 
             obs.append([demo_data_obs[epsd][self.T - 1].get('observation')])
             achieved_goals.append([demo_data_obs[epsd][self.T - 1].get('achieved_goal')])
@@ -331,7 +331,7 @@ class DDPG(object):
                                 for i, key in enumerate(self.stage_shapes.keys())])
         batch_tf['r'] = tf.reshape(batch_tf['r'], [-1, 1])
 
-        # choose only the demo buffer samples
+        #choose only the demo buffer samples
         mask = np.concatenate((np.zeros(self.batch_size - self.demo_batch_size), np.ones(self.demo_batch_size)), axis = 0)
 
         # networks
@@ -359,7 +359,7 @@ class DDPG(object):
 
         if self.bc_loss ==1 and self.q_filter == 1 : # train with demonstrations and use bc_loss and q_filter both
             maskMain = tf.reshape(tf.boolean_mask(self.main.Q_tf > self.main.Q_pi_tf, mask), [-1]) #where is the demonstrator action better than actor action according to the critic? choose those samples only
-            # define the cloning loss on the actor's actions only on the samples which adhere to the above masks
+            #define the cloning loss on the actor's actions only on the samples which adhere to the above masks
             self.cloning_loss_tf = tf.reduce_sum(tf.square(tf.boolean_mask(tf.boolean_mask((self.main.pi_tf), mask), maskMain, axis=0) - tf.boolean_mask(tf.boolean_mask((batch_tf['u']), mask), maskMain, axis=0)))
             self.pi_loss_tf = -self.prm_loss_weight * tf.reduce_mean(self.main.Q_pi_tf) #primary loss scaled by it's respective weight prm_loss_weight
             self.pi_loss_tf += self.prm_loss_weight * self.action_l2 * tf.reduce_mean(tf.square(self.main.pi_tf / self.max_u)) #L2 loss on action values scaled by the same weight prm_loss_weight
@@ -371,7 +371,7 @@ class DDPG(object):
             self.pi_loss_tf += self.prm_loss_weight * self.action_l2 * tf.reduce_mean(tf.square(self.main.pi_tf / self.max_u))
             self.pi_loss_tf += self.aux_loss_weight * self.cloning_loss_tf
 
-        else: # If  not training with demonstrations
+        else: #If  not training with demonstrations
             self.pi_loss_tf = -tf.reduce_mean(self.main.Q_pi_tf)
             self.pi_loss_tf += self.action_l2 * tf.reduce_mean(tf.square(self.main.pi_tf / self.max_u))
 
@@ -431,7 +431,6 @@ class DDPG(object):
             # We don't need this for playing the policy.
             state['sample_transitions'] = None
 
-        # Initialise DDPG
         self.__init__(**state)
         # set up stats (they are overwritten in __init__)
         for k, v in state.items():

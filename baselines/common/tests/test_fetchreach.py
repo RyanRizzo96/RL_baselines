@@ -36,5 +36,6 @@ def test_fetchreach(alg):
 
     reward_per_episode_test(env_fn, learn_fn, -15)
 
+
 if __name__ == '__main__':
     test_fetchreach('her')

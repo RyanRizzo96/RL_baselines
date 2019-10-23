@@ -11,6 +11,7 @@ _sess_config = tf.ConfigProto(
     inter_op_parallelism_threads=1
 )
 
+
 def simple_test(env_fn, learn_fn, min_reward_fraction, n_trials=N_TRIALS):
     def seeded_env_fn():
         env = env_fn()
@@ -38,17 +39,20 @@ def simple_test(env_fn, learn_fn, min_reward_fraction, n_trials=N_TRIALS):
         assert sum_rew > min_reward_fraction * n_trials, \
             'sum of rewards {} is less than {} of the total number of trials {}'.format(sum_rew, min_reward_fraction, n_trials)
 
+
 def reward_per_episode_test(env_fn, learn_fn, min_avg_reward, n_trials=N_EPISODES):
     env = DummyVecEnv([env_fn])
     with tf.Graph().as_default(), tf.Session(config=_sess_config).as_default():
         model = learn_fn(env)
         N_TRIALS = 100
         observations, actions, rewards = rollout(env, model, N_TRIALS)
+        # print(env.actions, env.action_space, env.observation_space, rewards, actions, observations)
         rewards = [sum(r) for r in rewards]
         avg_rew = sum(rewards) / N_TRIALS
         print("Average reward in {} episodes is {}".format(n_trials, avg_rew))
         assert avg_rew > min_avg_reward, \
             'average reward in {} episodes ({}) is less than {}'.format(n_trials, avg_rew, min_avg_reward)
+
 
 def rollout(env, model, n_trials):
     rewards = []
