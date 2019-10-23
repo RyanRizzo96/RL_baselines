@@ -49,3 +49,6 @@ MUJOCO_LOG.TXT
 .models/FetchReach_5k_her
 .models/FetchReach_5k_her
 .models/FetchReach_5k_her
+.log/FetchReach/5k/layers_5-2019-10-21-10-09-21/tb/events.out.tfevents.1571645377.RRMBP
+.log/FetchReach/5k_test1/3_layers-2019-10-21-10-32-48/tb/events.out.tfevents.1571646778.RRMBP
+.log/FetchReach/5k_test1/layers_5-2019-10-21-10-27-32/tb/events.out.tfevents.1571646468.RRMBP
