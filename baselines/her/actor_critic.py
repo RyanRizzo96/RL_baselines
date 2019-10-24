@@ -20,6 +20,8 @@ class ActorCritic:
             hidden (int): number of hidden units that should be used in hidden layers
             layers (int): number of hidden layers
         """
+
+        # Calls util.py stpre_args(methos)
         self.o_tf = inputs_tf['o']
         self.g_tf = inputs_tf['g']
         self.u_tf = inputs_tf['u']
@@ -41,4 +43,3 @@ class ActorCritic:
             input_Q = tf.concat(axis=1, values=[o, g, self.u_tf / self.max_u])
             self._input_Q = input_Q  # exposed for tests
             self.Q_tf = nn(input_Q, [self.hidden] * self.layers + [1], reuse=True)
-
