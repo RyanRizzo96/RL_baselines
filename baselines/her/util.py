@@ -11,6 +11,7 @@ import numpy as np
 from baselines.common import tf_util as U
 
 
+# Calls actor_critic.py
 def store_args(method):
     """Stores provided method args as instance attributes.
     """
