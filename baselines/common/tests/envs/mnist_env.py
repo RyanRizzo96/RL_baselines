@@ -52,7 +52,7 @@ class MnistEnv(Env):
         self.np_random.seed(seed)
 
     def train_mode(self):
-        self.dataset = self.mnist.train
+        self.dataset = self.mnist.ddpg_train
 
     def test_mode(self):
         self.dataset = self.mnist.test
