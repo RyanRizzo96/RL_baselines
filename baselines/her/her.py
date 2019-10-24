@@ -20,6 +20,7 @@ def mpi_average(value):
     return mpi_moments(np.array(value))[0]
 
 
+# policy is DDPG
 def train(*, policy, rollout_worker, evaluator,
           n_epochs, n_test_rollouts, n_cycles, n_batches, policy_save_interval,
           save_path, demo_file, **kwargs):
@@ -43,9 +44,10 @@ def train(*, policy, rollout_worker, evaluator,
             episode = rollout_worker.generate_rollouts()    # First we generate a rollout then we store it
             policy.ddpg_store_episode(episode)
             for _ in range(n_batches):
-                policy.train()
-            policy.update_target_net()
+                policy.ddpg_train()
+            policy.ddpg_update_target_net()
 
+        # TODO: What is difference between rollout_worker and evaluator
         # test
         evaluator.clear_history()
         for _ in range(n_test_rollouts):
@@ -188,7 +190,7 @@ def learn(*, network, env, total_timesteps,
 @click.option('--policy_save_interval', type=int, default=5, help='the interval with which policy pickles are saved. If set to 0, only the best and latest policy will be pickled.')
 @click.option('--replay_strategy', type=click.Choice(['future', 'none']), default='future', help='the HER replay strategy to be used. "future" uses HER, "none" disables HER.')
 @click.option('--clip_return', type=int, default=1, help='whether or not returns should be clipped')
-@click.option('--demo_file', type=str, default = 'PATH/TO/DEMO/DATA/FILE.npz', help='demo data file path')
+@click.option('--demo_file', type=str, default='PATH/TO/DEMO/DATA/FILE.npz', help='demo data file path')
 def main(**kwargs):
     learn(**kwargs)
 
