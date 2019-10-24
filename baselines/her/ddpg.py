@@ -123,7 +123,6 @@ class DDPG(object):
         actions = self.get_actions(obs['observation'], obs['achieved_goal'], obs['desired_goal'])
         return actions, None, None, None
 
-
     def get_actions(self, o, ag, g, noise_eps=0., random_eps=0., use_target_net=False,
                     compute_Q=False):
         o, g = self._preprocess_og(o, ag, g)
@@ -177,11 +176,10 @@ class DDPG(object):
                 for idx, key in enumerate(info_keys):
                     info_values[idx][transition, i] = demo_data_info[epsd][transition][key]
 
-
             obs.append([demo_data_obs[epsd][self.T - 1].get('observation')])
             achieved_goals.append([demo_data_obs[epsd][self.T - 1].get('achieved_goal')])
 
-            episode = dict(o=obs,
+            episode = dict(observations=obs,
                            u=acts,
                            g=goals,
                            ag=achieved_goals)
@@ -190,7 +188,7 @@ class DDPG(object):
 
             episode = convert_episode_to_batch_major(episode)
             global DEMO_BUFFER
-            DEMO_BUFFER.store_episode(episode) # create the observation dict and append them into the demonstration buffer
+            DEMO_BUFFER.ddpg_store_episode(episode) # create the observation dict and append them into the demonstration buffer
             logger.debug("Demo buffer size currently ", DEMO_BUFFER.get_current_size()) #print out the demonstration buffer size
 
             if update_stats:
@@ -211,9 +209,9 @@ class DDPG(object):
                 self.g_stats.recompute_stats()
             episode.clear()
 
-        logger.info("Demo buffer size: ", DEMO_BUFFER.get_current_size()) #print out the demonstration buffer size
+        logger.info("Demo buffer size: ", DEMO_BUFFER.get_current_size()) # print out the demonstration buffer size
 
-    def store_episode(self, episode_batch, update_stats=True):
+    def ddpg_store_episode(self, episode_batch, update_stats=True):
         """
         episode_batch: array of batch_size x (T or T+1) x dim_key
                        'o' is of size T+1, others are of size T
@@ -338,6 +336,8 @@ class DDPG(object):
         with tf.variable_scope('main') as vs:
             if reuse:
                 vs.reuse_variables()
+
+                # Create actor critic network
             self.main = self.create_actor_critic(batch_tf, net_type='main', **self.__dict__)
             vs.reuse_variables()
         with tf.variable_scope('target') as vs:
