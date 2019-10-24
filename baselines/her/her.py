@@ -40,8 +40,8 @@ def train(*, policy, rollout_worker, evaluator,
         # train
         rollout_worker.clear_history()
         for _ in range(n_cycles):
-            episode = rollout_worker.generate_rollouts()
-            policy.store_episode(episode)
+            episode = rollout_worker.generate_rollouts()    # First we generate a rollout then we store it
+            policy.ddpg_store_episode(episode)
             for _ in range(n_batches):
                 policy.train()
             policy.update_target_net()
