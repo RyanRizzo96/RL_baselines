@@ -58,3 +58,5 @@ MUJOCO_LOG.TXT
 *.png
 baselines/gail/result/HalfCheetah-normalized-deterministic-scores.png
 *.png
+.models/FetchReach/3_layers
+.models/FetchReach/3_layers
