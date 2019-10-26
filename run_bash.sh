@@ -9,7 +9,9 @@ export OPENAI_LOG_FORMAT=stdout,log,csv,tensorboard
 
 # python3 -m baselines.run --alg=her --env=FetchReach-v1 --num_timesteps=5000 --save_path=.models/FetchReach/3_layers
 
- mpirun -np 19 python3 -m baselines.run --alg=her --env=FetchPickAndPlace-v1 --env=FetchPush-v1 --num_timesteps=10000 --save_path=~/policies/her/run4/10k
+# mpirun -np 19 python3 -m baselines.run --alg=her --env=FetchPickAndPlace-v1 --env=FetchPush-v1 --num_timesteps=10000 --save_path=~/policies/her/run4/10k
+
+ mpirun -np 19 python3 -m baselines.run --num_env=2 --alg=her --env=FetchPickAndPlace-v1 --env=FetchPush-v1 --num_timesteps=10000 --save_path=~/policies/her/run4/10k
 
 # mpirun -np 19 python3 -m baselines.run --num_env=2 --alg=her --env=FetcPickAndPlace-v1 --env=FetchPush-v1 --num_timesteps=2000000 --save_path=~/policies/her/run1/2mil
 
