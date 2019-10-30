@@ -5,9 +5,9 @@ source ~/.virtualenvs/baseline_env/bin/activate
 # echo $PWD
 
 # export OPENAI_LOGDIR=.log/FetchReach/HER5k/trial1
-# export OPENAI_LOG_FORMAT=stdout,log,csv,tensorboard
+export OPENAI_LOG_FORMAT=stdout,log,csv,tensorboard
 
-export OPENAI_LOG_FORMAT=csv
+# export OPENAI_LOG_FORMAT=csv
 
 # python3 -m baselines.run --alg=her --env=FetchReach-v1 --num_timesteps=5000 --save_path=.models/FetchReach/3_layers
 
