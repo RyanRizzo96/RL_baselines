@@ -38,7 +38,7 @@ class Monitor(Wrapper):
             self.file_handler = open(filename, "wt")
             self.file_handler.write('#%s\n' % json.dumps({"t_start": self.t_start, 'env_id': env.spec and env.spec.id}))
             self.logger = csv.DictWriter(self.file_handler,
-                                         fieldnames=('r', 'l', 't') + reset_keywords + info_keywords)
+                                         fieldnames=('s', 'r', 'l', 't') + reset_keywords + info_keywords)
             self.logger.writeheader()
             self.file_handler.flush()
 
@@ -51,6 +51,7 @@ class Monitor(Wrapper):
         self.episode_lengths = []
         self.episode_times = []
         self.total_steps = 0
+        self.success_rate = []
         self.current_reset_info = {}  # extra info about the current episode, that was passed in during reset()
 
     def reset(self, **kwargs):
@@ -140,6 +141,9 @@ class Monitor(Wrapper):
         """
         return self.episode_times
 
+    def get_success_rate(self):
+        return self.success_rate
+
 
 class LoadMonitorResultsError(Exception):
     """
@@ -161,7 +165,7 @@ class ResultsWriter(object):
         if isinstance(header, dict):
             header = '# {} \n'.format(json.dumps(header))
         self.f.write(header)
-        self.logger = csv.DictWriter(self.f, fieldnames=('r', 'l', 't')+tuple(extra_keys))
+        self.logger = csv.DictWriter(self.f, fieldnames=('s', 'r', 'l', 't')+tuple(extra_keys))
         self.logger.writeheader()
         self.f.flush()
 
