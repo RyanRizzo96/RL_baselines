@@ -13,7 +13,7 @@ export OPENAI_LOG_FORMAT=stdout,log,csv,tensorboard
 
 # mpirun -np 19 python3 -m baselines.run --alg=her --env=FetchPickAndPlace-v1  --num_timesteps=1000000 --save_path=./models/her/run5/FPAP_1mil
 
-# python3 -m baselines.run --alg=her --env=FetchPickAndPlace-v1 --num_timesteps=0 --load_path=~/policies/her/run5 --play
+# python3 -m baselines.run --alg=her --env=FetchPickAndPlace-v1 --num_timesteps=0 --load_path=/Users/ryanr/B.Eng/MCAST_Degree_4/Thesis/code/baseline_code/baselines/.policies/her/test2.1/FPAP_1k --play
 
 # python3 -m baselines.run --alg=her --env=FetchReach-v1 --num_timesteps=5000
 
