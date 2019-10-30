@@ -5,12 +5,13 @@ import os
 
 # osprint(os.environ['OPENAI_LOGDIR'])
 
-OPENAI_LOGDIR=".log/FetchReach/HER5k/trial1"
+# OPENAI_LOGDIR=".log/FetchReach/HER5k/trial1"
 
-results = plot.load_results(OPENAI_LOGDIR)  # pass variable from bash script
+results = plot.load_results(".log/HER/test_5k/2019-10-27-13-52-48")  # pass variable from bash script
 print(results)
 r = results[0]
 plt.plot(np.cumsum(r.monitor.l), plot.smooth(r.monitor.r, radius=1))  # radius to smoother
+print(r.monitor.l)
 plt.xlabel('Episodes')
 plt.ylabel('Reward')
 plt.show()
