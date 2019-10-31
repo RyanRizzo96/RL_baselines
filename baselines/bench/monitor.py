@@ -6,6 +6,8 @@ import os
 import time
 from glob import glob
 
+import numpy as np
+
 import pandas
 from gym.core import Wrapper
 
@@ -50,8 +52,8 @@ class Monitor(Wrapper):
         self.episode_rewards = []
         self.episode_lengths = []
         self.episode_times = []
+        self.episode_success_rate = []
         self.total_steps = 0
-        self.success_rate = []
         self.current_reset_info = {}  # extra info about the current episode, that was passed in during reset()
 
     def reset(self, **kwargs):
@@ -80,20 +82,36 @@ class Monitor(Wrapper):
         :param action: ([int] or [float]) the action
         :return: ([int] or [float], [float], [bool], dict) observation, reward, done, information
         """
+
+        successes = []
+
         if self.needs_reset:
             raise RuntimeError("Tried to step environment that needs reset")
         observation, reward, done, info = self.env.step(action)
+
+        # success = np.array([i.get('is_success', 0.0) for i in info])
+        # successes.append(success.copy())
+
         self.rewards.append(reward)
         if done:
             self.needs_reset = True
             ep_rew = sum(self.rewards)
             eplen = len(self.rewards)
-            ep_info = {"r": round(ep_rew, 6), "l": eplen, "t": round(time.time() - self.t_start, 6)}
+
+            # successful = np.array(successes)[-1, :]
+            # success_rate = np.mean(successful)
+            # self.success_history.append(success_rate)
+
+            ep_info = { "r": round(ep_rew, 6), "l": eplen, "t": round(time.time() - self.t_start, 6)}
+
             for key in self.info_keywords:
                 ep_info[key] = info[key]
             self.episode_rewards.append(ep_rew)
             self.episode_lengths.append(eplen)
             self.episode_times.append(time.time() - self.t_start)
+
+            # self.episode_success_rate = np.mean(self.success_history)
+
             ep_info.update(self.current_reset_info)
             if self.logger:
                 self.logger.writerow(ep_info)
@@ -142,7 +160,7 @@ class Monitor(Wrapper):
         return self.episode_times
 
     def get_success_rate(self):
-        return self.success_rate
+        return np.mean(self.success_history)
 
 
 class LoadMonitorResultsError(Exception):
