@@ -15,17 +15,13 @@ export OPENAI_LOG_FORMAT=stdout,log,csv,tensorboard
 
 # python3 -m baselines.run --alg=her --env=FetchReach-v1  --num_timesteps=5000
 
-# python3 -m baselines.run --alg=her --env=FetchPickAndPlace-v1 --num_timesteps=0 --load_path=/Users/ryanr/B.Eng/MCAST_Degree_4/Thesis/code/baseline_code/baselines/.models/her/ec2_test_5k_test --play
-
-# python3 -m baselines.run --alg=her --env=FetchReach-v1 --num_timesteps=1000
-
-# for seed in $(seq 0 5); do OPENAI_LOG_FORMAT=csv OPENAI_LOGDIR=$HOME/logs/her_seed/b32-$seed python3 -m baselines.run --alg=her --env=FetchReach-v1 --num_timesteps=10000 --seed=$seed --nsteps=32; done
+# python3 -m baselines.run --alg=her --env=FetchPickAndPlace-v1 --num_timesteps=0 --load_path=/Users/ryanr/B.Eng/MCAST_Degree_4/Thesis/code/baseline_code/baselines/policies/her/FPAP_200k/standard --play
 
 # TEST 2
 # mpirun -np 19 python3 -m baselines.run --alg=her --env=FetchPickAndPlace-v1  --num_timesteps=1000000 --save_path=.models/her/FPAP_1mil_run3
 
 # mpirun -np 19 python3 -m baselines.run --alg=her --env=FetchPickAndPlace-v1  --num_timesteps=1000 --save_path=.models/her/ec2_test_5k_test
 
-mpirun -np 19 python3 -m baselines.run --alg=her --env=FetchPickAndPlace-v1 --num_timesteps=200000 --save_path=policies/her/FPAP_200k/standard
+mpirun -np 19 python3 -m baselines.run --alg=her --env=FetchPush-v1 --num_timesteps=200000 --save_path=policies/her/FPUSH_200k/standard
 
 # python3 csv_plot.py

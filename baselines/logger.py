@@ -606,7 +606,7 @@ def configure(folder=None, format_strs=None):
     if folder is None:
         folder = os.getenv('OPENAI_LOGDIR')
     if folder is None:
-        folder = os.path.join("results/her_logs/FPAP_200k/standard", datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
+        folder = os.path.join("results/her_logs/FPUSH_200k/standard", datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
     assert isinstance(folder, str)
     os.makedirs(folder, exist_ok=True)
     rank = get_rank_without_mpi_import()
