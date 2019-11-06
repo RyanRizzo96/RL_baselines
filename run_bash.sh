@@ -22,6 +22,6 @@ export OPENAI_LOG_FORMAT=stdout,log,csv,tensorboard
 
 # mpirun -np 19 python3 -m baselines.run --alg=her --env=FetchPickAndPlace-v1  --num_timesteps=1000 --save_path=.models/her/ec2_test_5k_test
 
-mpirun -np 19 python3 -m baselines.run --alg=her --env=FetchPush-v1 --num_timesteps=200000 --save_path=policies/her/FPUSH_200k/standard
+mpirun -np 19 python3 -m baselines.run --alg=her --env=FetchSlide-v1 --num_timesteps=200000 --save_path=policies/her/FSLIDE_200k/standard
 
 # python3 csv_plot.py
