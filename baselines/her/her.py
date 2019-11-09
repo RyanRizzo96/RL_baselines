@@ -154,9 +154,10 @@ def learn(*, network, env, total_timesteps,
     # Before call to DDPG we configure the dimensions of the observation, action and goal
     dims = config.configure_dims(params)
 
-    # Call to initialize DDPG
+    # Call to initialize DDPG and create actor critic network
     policy = config.configure_ddpg(dims=dims, params=params, clip_return=clip_return)
 
+    # Check if we are loading previous trained policy
     if load_path is not None:
         tf_util.load_variables(load_path)
 

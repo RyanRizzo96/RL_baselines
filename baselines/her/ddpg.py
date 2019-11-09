@@ -65,7 +65,7 @@ class DDPG(object):
         if self.clip_return is None:
             self.clip_return = np.inf
 
-        self.create_actor_critic = import_function(self.network_class)
+        self.create_actor_critic = import_function(self.network_class)  # points to actor_critic.py
 
         self.input_dims = input_dims
 
@@ -94,7 +94,7 @@ class DDPG(object):
                 tf.placeholder(tf.float32, shape=shape) for shape in self.stage_shapes.values()]
             self.stage_op = self.staging_tf.put(self.buffer_ph_tf)
 
-            self._create_network(reuse=reuse)
+            self._create_network(reuse=reuse)  # Creates DDPG agent
 
         # Configure the replay buffer.
         buffer_shapes = {key: (self.T-1 if key != 'o' else self.T, *input_shapes[key])
@@ -106,7 +106,8 @@ class DDPG(object):
         self.buffer = ReplayBuffer(buffer_shapes, buffer_size, self.T, self.sample_transitions)
 
         global DEMO_BUFFER
-        DEMO_BUFFER = ReplayBuffer(buffer_shapes, buffer_size, self.T, self.sample_transitions) #initialize the demo buffer; in the same way as the primary data buffer
+        # initialize the demo buffer; in the same way as the primary data buffer
+        DEMO_BUFFER = ReplayBuffer(buffer_shapes, buffer_size, self.T, self.sample_transitions)
 
     def _random_action(self, n):
         return np.random.uniform(low=-self.max_u, high=self.max_u, size=(n, self.dimu))
@@ -131,9 +132,9 @@ class DDPG(object):
         o, g = self._preprocess_og(o, ag, g)
         policy = self.target if use_target_net else self.main
         # values to compute
-        vals = [policy.pi_tf]
+        vals = [policy.actor_tf]
         if compute_Q:
-            vals += [policy.Q_pi_tf]
+            vals += [policy.critic_actor_tf]
         # feed
         feed = {
             policy.o_tf: o.reshape(-1, self.dimo),
@@ -244,21 +245,21 @@ class DDPG(object):
 
     def _sync_optimizers(self):
         self.Q_adam.sync()
-        self.pi_adam.sync()
+        self.actor_adam.sync()
 
     def _grads(self):
         # Avoid feed_dict here for performance!
-        critic_loss, actor_loss, Q_grad, pi_grad = self.sess.run([
-            self.Q_loss_tf,
-            self.main.Q_pi_tf,
-            self.Q_grad_tf,
-            self.pi_grad_tf
+        critic_loss, actor_loss, critic_grad, actor_grad = self.sess.run([
+            self.critic_loss_tf,
+            self.main.critic_actor_tf,
+            self.critic_grad_tf,
+            self.actor_grad_tf
         ])
-        return critic_loss, actor_loss, Q_grad, pi_grad
+        return critic_loss, actor_loss, critic_grad, actor_grad
 
-    def _update(self, Q_grad, pi_grad):
-        self.Q_adam.update(Q_grad, self.Q_lr)
-        self.pi_adam.update(pi_grad, self.pi_lr)
+    def _update(self, critic_grad, actor_grad):
+        self.Q_adam.update(critic_grad, self.Q_lr)
+        self.actor_adam.update(actor_grad, self.pi_lr)
 
     def sample_batch(self):
         if self.bc_loss: #use demonstration buffer to sample as well if bc_loss flag is set TRUE
@@ -317,13 +318,13 @@ class DDPG(object):
         self.sess = tf_util.get_session()
 
         # running averages
-        with tf.variable_scope('o_stats') as vs:
+        with tf.variable_scope('o_stats') as variable_scope:
             if reuse:
-                vs.reuse_variables()
+                variable_scope.reuse_variables()
             self.o_stats = Normalizer(self.dimo, self.norm_eps, self.norm_clip, sess=self.sess)
-        with tf.variable_scope('g_stats') as vs:
+        with tf.variable_scope('g_stats') as variable_scope:
             if reuse:
-                vs.reuse_variables()
+                variable_scope.reuse_variables()
             self.g_stats = Normalizer(self.dimg, self.norm_eps, self.norm_clip, sess=self.sess)
 
         # mini-batch sampling.
@@ -333,63 +334,73 @@ class DDPG(object):
         batch_tf['r'] = tf.reshape(batch_tf['r'], [-1, 1])
 
         # choose only the demo buffer samples
-        mask = np.concatenate((np.zeros(self.batch_size - self.demo_batch_size), np.ones(self.demo_batch_size)), axis = 0)
+        mask = np.concatenate((np.zeros(self.batch_size - self.demo_batch_size), np.ones(self.demo_batch_size)), axis=0)
 
         # networks
-        with tf.variable_scope('main') as vs:
+        with tf.variable_scope('main') as variable_scope:
             if reuse:
-                vs.reuse_variables()
+                variable_scope.reuse_variables()
 
-                # Create actor critic network
+            # Create actor critic network
             self.main = self.create_actor_critic(batch_tf, net_type='main', **self.__dict__)
-            vs.reuse_variables()
-        with tf.variable_scope('target') as vs:
+            variable_scope.reuse_variables()
+
+        with tf.variable_scope('target') as variable_scope:
             if reuse:
-                vs.reuse_variables()
+                variable_scope.reuse_variables()
             target_batch_tf = batch_tf.copy()
             target_batch_tf['o'] = batch_tf['o_2']
             target_batch_tf['g'] = batch_tf['g_2']
             self.target = self.create_actor_critic(
                 target_batch_tf, net_type='target', **self.__dict__)
-            vs.reuse_variables()
+            variable_scope.reuse_variables()
         assert len(self._vars("main")) == len(self._vars("target"))
 
         # loss functions
-        target_Q_pi_tf = self.target.Q_pi_tf
+        target_critic_actor_tf = self.target.critic_actor_tf
         clip_range = (-self.clip_return, 0. if self.clip_pos_returns else np.inf)
-        target_tf = tf.clip_by_value(batch_tf['r'] + self.gamma * target_Q_pi_tf, *clip_range)
-        self.Q_loss_tf = tf.reduce_mean(tf.square(tf.stop_gradient(target_tf) - self.main.Q_tf))
+        target_tf = tf.clip_by_value(batch_tf['r'] + self.gamma * target_critic_actor_tf, *clip_range)
 
-        if self.bc_loss ==1 and self.q_filter == 1 : # train with demonstrations and use bc_loss and q_filter both
-            maskMain = tf.reshape(tf.boolean_mask(self.main.Q_tf > self.main.Q_pi_tf, mask), [-1]) #where is the demonstrator action better than actor action according to the critic? choose those samples only
+        # MSE of target_tf - critic_tf
+        self.critic_loss_tf = tf.reduce_mean(tf.square(tf.stop_gradient(target_tf) - self.main.critic_tf))
+
+        # train with demonstrations and use bc_loss and q_filter both
+        if self.bc_loss == 1 and self.q_filter == 1:
+            print("Training with demonstration")
+            # where is the demonstrator action better than actor action according to the critic? choose samples only
+            maskMain = tf.reshape(tf.boolean_mask(self.main.critic_tf > self.main.critic_actor_tf, mask), [-1])
             # define the cloning loss on the actor's actions only on the samples which adhere to the above masks
-            self.cloning_loss_tf = tf.reduce_sum(tf.square(tf.boolean_mask(tf.boolean_mask((self.main.pi_tf), mask), maskMain, axis=0) - tf.boolean_mask(tf.boolean_mask((batch_tf['u']), mask), maskMain, axis=0)))
-            self.pi_loss_tf = -self.prm_loss_weight * tf.reduce_mean(self.main.Q_pi_tf) #primary loss scaled by it's respective weight prm_loss_weight
-            self.pi_loss_tf += self.prm_loss_weight * self.action_l2 * tf.reduce_mean(tf.square(self.main.pi_tf / self.max_u)) #L2 loss on action values scaled by the same weight prm_loss_weight
-            self.pi_loss_tf += self.aux_loss_weight * self.cloning_loss_tf #adding the cloning loss to the actor loss as an auxilliary loss scaled by its weight aux_loss_weight
+            self.cloning_loss_tf = tf.reduce_sum(tf.square(tf.boolean_mask(tf.boolean_mask((self.main.actor_tf), mask), maskMain, axis=0) - tf.boolean_mask(tf.boolean_mask((batch_tf['u']), mask), maskMain, axis=0)))
+            # primary loss scaled by it's respective weight prm_loss_weight
+            self.actor_loss_tf = -self.prm_loss_weight * tf.reduce_mean(self.main.critic_actor_tf)
+            # L2 loss on action values scaled by the same weight prm_loss_weight
+            self.actor_loss_tf += self.prm_loss_weight * self.action_l2 * tf.reduce_mean(tf.square(self.main.actor_tf / self.max_u))
+            # adding the cloning loss to the actor loss as an auxiliary loss scaled by its weight aux_loss_weight
+            self.actor_loss_tf += self.aux_loss_weight * self.cloning_loss_tf
 
         elif self.bc_loss == 1 and self.q_filter == 0: # train with demonstrations without q_filter
-            self.cloning_loss_tf = tf.reduce_sum(tf.square(tf.boolean_mask((self.main.pi_tf), mask) - tf.boolean_mask((batch_tf['u']), mask)))
-            self.pi_loss_tf = -self.prm_loss_weight * tf.reduce_mean(self.main.Q_pi_tf)
-            self.pi_loss_tf += self.prm_loss_weight * self.action_l2 * tf.reduce_mean(tf.square(self.main.pi_tf / self.max_u))
-            self.pi_loss_tf += self.aux_loss_weight * self.cloning_loss_tf
+            self.cloning_loss_tf = tf.reduce_sum(tf.square(tf.boolean_mask((self.main.actor_tf), mask) - tf.boolean_mask((batch_tf['u']), mask)))
+            self.actor_loss_tf = -self.prm_loss_weight * tf.reduce_mean(self.main.critic_actor_tf)
+            self.actor_loss_tf += self.prm_loss_weight * self.action_l2 * tf.reduce_mean(tf.square(self.main.actor_tf / self.max_u))
+            self.actor_loss_tf += self.aux_loss_weight * self.cloning_loss_tf
 
-        else: # If  not training with demonstrations
-            self.pi_loss_tf = -tf.reduce_mean(self.main.Q_pi_tf)
-            self.pi_loss_tf += self.action_l2 * tf.reduce_mean(tf.square(self.main.pi_tf / self.max_u))
+        else:  # If  not training with demonstrations
+            print("Not training with demonstration")
+            self.actor_loss_tf = -tf.reduce_mean(self.main.critic_actor_tf)
+            self.actor_loss_tf += self.action_l2 * tf.reduce_mean(tf.square(self.main.actor_tf / self.max_u))
 
-        Q_grads_tf = tf.gradients(self.Q_loss_tf, self._vars('main/Q'))
-        pi_grads_tf = tf.gradients(self.pi_loss_tf, self._vars('main/pi'))
-        assert len(self._vars('main/Q')) == len(Q_grads_tf)
-        assert len(self._vars('main/pi')) == len(pi_grads_tf)
-        self.Q_grads_vars_tf = zip(Q_grads_tf, self._vars('main/Q'))
-        self.pi_grads_vars_tf = zip(pi_grads_tf, self._vars('main/pi'))
-        self.Q_grad_tf = flatten_grads(grads=Q_grads_tf, var_list=self._vars('main/Q'))
-        self.pi_grad_tf = flatten_grads(grads=pi_grads_tf, var_list=self._vars('main/pi'))
+        critic_grads_tf = tf.gradients(self.critic_loss_tf, self._vars('main/Q'))
+        actor_grads_tf = tf.gradients(self.actor_loss_tf, self._vars('main/pi'))
+        assert len(self._vars('main/Q')) == len(critic_grads_tf)
+        assert len(self._vars('main/pi')) == len(actor_grads_tf)
+        self.critic_grads_vars_tf = zip(critic_grads_tf, self._vars('main/Q'))
+        self.actor_grads_vars_tf = zip(actor_grads_tf, self._vars('main/pi'))
+        self.critic_grad_tf = flatten_grads(grads=critic_grads_tf, var_list=self._vars('main/Q'))
+        self.actor_grad_tf = flatten_grads(grads=actor_grads_tf, var_list=self._vars('main/pi'))
 
         # optimizers
         self.Q_adam = MpiAdam(self._vars('main/Q'), scale_grad_by_procs=False)
-        self.pi_adam = MpiAdam(self._vars('main/pi'), scale_grad_by_procs=False)
+        self.actor_adam = MpiAdam(self._vars('main/pi'), scale_grad_by_procs=False)
 
         # polyak averaging
         self.main_vars = self._vars('main/Q') + self._vars('main/pi')
