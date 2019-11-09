@@ -12,6 +12,9 @@ import pandas
 from gym.core import Wrapper
 
 
+# Handles montor.csv file which prints reward, ep lengths and time
+# TODO: Include success rate
+
 class Monitor(Wrapper):
     EXT = "monitor.csv"
     file_handler = None

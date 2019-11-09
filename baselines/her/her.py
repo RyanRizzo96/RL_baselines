@@ -98,9 +98,12 @@ def learn(*, network, env, total_timesteps,
           load_path=None,
           save_path=None,
           **kwargs
-):
+          ):
 
+    # Check if there are any overriding params
     override_params = override_params or {}
+
+    # Check for MPI workers, if not none check rank and number of CPU's
     if MPI is not None:
         rank = MPI.COMM_WORLD.Get_rank()
         num_cpu = MPI.COMM_WORLD.Get_size()
@@ -110,22 +113,30 @@ def learn(*, network, env, total_timesteps,
     set_global_seeds(rank_seed)
 
     # Prepare params.
-    params = config.DEFAULT_PARAMS
-    env_name = env.spec.id
-    params['env_name'] = env_name
-    params['replay_strategy'] = replay_strategy
+    params = config.DEFAULT_PARAMS  # Uses default parameters set inside config.py
+    env_name = env.spec.id  # Unwrap the environment and get the id, Eg: CartPole-v0
+    params['env_name'] = env_name  # Save env_name as a param
+    params['replay_strategy'] = replay_strategy  # Add replay_strategy as param
+
     if env_name in config.DEFAULT_ENV_PARAMS:
         params.update(config.DEFAULT_ENV_PARAMS[env_name])  # merge env-specific parameters in
     params.update(**override_params)  # makes it possible to override any parameter
+
+    # Output params in params.json file in logger directory
     with open(os.path.join(logger.get_dir(), 'params.json'), 'w') as f:
          json.dump(params, f)
+
+    # Creates gym env, checks MPI rank, monitor initialization
     params = config.prepare_params(params)
+    # params['rollout_batch_size'] = env.num_envs  # Not sure about this. Does this override the value in config.py?
     params['rollout_batch_size'] = env.num_envs
+    print("env.num_envs - ", env.num_envs)
 
     if demo_file is not None:
         params['bc_loss'] = 1
     params.update(kwargs)
 
+    # Print out params before training
     config.log_params(params, logger=logger)
 
     if num_cpu == 1:
@@ -145,6 +156,7 @@ def learn(*, network, env, total_timesteps,
 
     # Call to initialize DDPG
     policy = config.configure_ddpg(dims=dims, params=params, clip_return=clip_return)
+
     if load_path is not None:
         tf_util.load_variables(load_path)
 

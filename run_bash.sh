@@ -13,11 +13,11 @@ export OPENAI_LOG_FORMAT=stdout,log,csv,tensorboard
 
 # mpirun -np 19 python3 -m baselines.run --alg=her --env=FetchPickAndPlace-v1 --env=FetchPush-v1 --num_timesteps=10000 --save_path=~/policies/her/run4/10k
 
-# python3 -m baselines.run --alg=her --env=FetchReach-v1  --num_timesteps=5000
+python3 -m baselines.run --alg=her --env=FetchReach-v1  --num_timesteps=5000
 
 # python3 -m baselines.run --alg=her --env=FetchPush-v1 --num_timesteps=0 --load_path=/Users/ryanr/B.Eng/MCAST_Degree_4/Thesis/code/baseline_code/baselines/policies/her/FPUSH_200k/standard --play
 
-for seed in $(seq 0 5); do OPENAI_LOGDIR=$HOME/logs/her_seed/run1-$seed python3 -m baselines.run --alg=her --env=FetchReach-v1 --num_timesteps=5000 --seed=$seed --nsteps=32; done
+# for seed in $(seq 0 5); do OPENAI_LOGDIR=$HOME/logs/her_seed/run1-$seed python3 -m baselines.run --alg=her --env=FetchReach-v1 --num_timesteps=5000 --seed=$seed --nsteps=32; done
 
 
 

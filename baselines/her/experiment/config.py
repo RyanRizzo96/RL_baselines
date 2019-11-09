@@ -77,13 +77,16 @@ def cached_make_env(make_env):
     return CACHED_ENVS[make_env]
 
 
+# Called in beginning of learn() in her.py
 def prepare_params(kwargs):
     # DDPG params
-    ddpg_params = dict()
+    ddpg_params = dict()  # Create empty dictionary
     env_name = kwargs['env_name']
 
     def make_env(subrank=None):
-        env = gym.make(env_name)
+        env = gym.make(env_name)  # Create gym environment
+
+        # Check MPI rank, warm if single MPI process
         if subrank is not None and logger.get_dir() is not None:
             try:
                 from mpi4py import MPI
@@ -93,10 +96,13 @@ def prepare_params(kwargs):
                 mpi_rank = 0
                 logger.warn('Running with a single MPI process. This should work, but the results may differ from the ones publshed in Plappert et al.')
 
-            max_episode_steps = env._max_episode_steps
-            env =  Monitor(env,
-                           os.path.join(logger.get_dir(), str(mpi_rank) + '.' + str(subrank)),
-                           allow_early_resets=True)
+            max_episode_steps = env._max_episode_steps  # Get maximum episode steps (50)
+
+            # Pass to Monitor class which monitors the episode reward, length, time and other data.
+            env = Monitor(env,
+                          os.path.join(logger.get_dir(), str(mpi_rank) + '.' + str(subrank)),  # name of monitor.csv
+                          allow_early_resets=True)
+
             # hack to re-expose _max_episode_steps (ideally should replace reliance on it downstream)
             env = gym.wrappers.TimeLimit(env, max_episode_steps=max_episode_steps)
         return env
@@ -126,6 +132,7 @@ def prepare_params(kwargs):
     return kwargs
 
 
+# Print out params before training
 def log_params(params, logger=logger):
     for key in sorted(params.keys()):
         logger.info('{}: {}'.format(key, params[key]))

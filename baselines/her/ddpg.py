@@ -67,10 +67,12 @@ class DDPG(object):
 
         self.create_actor_critic = import_function(self.network_class)
 
-        input_shapes = dims_to_shapes(self.input_dims)
-        self.dimo = self.input_dims['o']
-        self.dimg = self.input_dims['g']
-        self.dimu = self.input_dims['u']
+        self.input_dims = input_dims
+
+        input_shapes = dims_to_shapes(input_dims)
+        self.dimo = input_dims['o']
+        self.dimg = input_dims['g']
+        self.dimu = input_dims['u']
 
         # Prepare staging area for feeding data to the model.
         stage_shapes = OrderedDict()
