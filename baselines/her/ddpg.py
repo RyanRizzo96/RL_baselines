@@ -112,6 +112,7 @@ class DDPG(object):
     def _random_action(self, n):
         return np.random.uniform(low=-self.max_u, high=self.max_u, size=(n, self.dimu))
 
+    # Not used
     def _preprocess_og(self, o, ag, g):
         if self.relative_goals:
             g_shape = g.shape
@@ -123,6 +124,7 @@ class DDPG(object):
         g = np.clip(g, -self.clip_obs, self.clip_obs)
         return o, g
 
+    # Not used
     def step(self, obs):
         actions = self.get_actions(obs['observation'], obs['achieved_goal'], obs['desired_goal'])
         return actions, None, None, None
@@ -159,6 +161,7 @@ class DDPG(object):
         else:
             return ret
 
+    # Not used
     def init_demo_buffer(self, demoDataFile, update_stats=True): #function that initializes the demo buffer
 
         demoData = np.load(demoDataFile) #load the demonstration data from data file

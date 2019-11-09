@@ -187,7 +187,10 @@ def learn(*, network, env, total_timesteps,
     evaluator = RolloutWorker(eval_env, policy, dims, logger, **eval_params)
 
     n_cycles = params['n_cycles']
+    print("n_cycles = ", n_cycles)
+
     n_epochs = total_timesteps // n_cycles // rollout_worker.T // rollout_worker.rollout_batch_size
+    print("n_epochs = ", n_epochs)
 
     return train(
         save_path=save_path, policy=policy, rollout_worker=rollout_worker,
