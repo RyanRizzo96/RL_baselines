@@ -27,40 +27,41 @@ class DDPG(object):
                  rollout_batch_size, subtract_goals, relative_goals, clip_pos_returns, clip_return,
                  bc_loss, q_filter, num_demo, demo_batch_size, prm_loss_weight, aux_loss_weight,
                  sample_transitions, gamma, reuse=False, **kwargs):
-        """Implementation of DDPG that is used in combination with Hindsight Experience Replay (HER).
+        """
+            Implementation of DDPG that is used in combination with Hindsight Experience Replay (HER).
             Added functionality to use demonstrations for training to Overcome exploration problem.
         Args:
-            input_dims (dict of ints): dimensions for the observation (o), the goal (g), and the
+            :param input_dims (dict of ints): dimensions for the observation (o), the goal (g), and the
                 actions (u)
-            buffer_size (int): number of transitions that are stored in the replay buffer
-            hidden (int): number of units in the hidden layers
-            layers (int): number of hidden layers
-            network_class (str): the network class that should be used (e.g. 'baselines.her.ActorCritic')
-            polyak (float): coefficient for Polyak-averaging of the target network
-            batch_size (int): batch size for training
-            Q_lr (float): learning rate for the Q (critic) network
-            pi_lr (float): learning rate for the pi (actor) network
-            norm_eps (float): a small value used in the normalizer to avoid numerical instabilities
-            norm_clip (float): normalized inputs are clipped to be in [-norm_clip, norm_clip]
-            max_u (float): maximum action magnitude, i.e. actions are in [-max_u, max_u]
-            action_l2 (float): coefficient for L2 penalty on the actions
-            clip_obs (float): clip observations before normalization to be in [-clip_obs, clip_obs]
-            scope (str): the scope used for the TensorFlow graph
-            T (int): the time horizon for rollouts
-            rollout_batch_size (int): number of parallel rollouts per DDPG agent
-            subtract_goals (function): function that subtracts goals from each other
-            relative_goals (boolean): whether or not relative goals should be fed into the network
-            clip_pos_returns (boolean): whether or not positive returns should be clipped
-            clip_return (float): clip returns to be in [-clip_return, clip_return]
-            sample_transitions (function) function that samples from the replay buffer
-            gamma (float): gamma used for Q learning updates
-            reuse (boolean): whether or not the networks should be reused
-            bc_loss: whether or not the behavior cloning loss should be used as an auxilliary loss
-            q_filter: whether or not a filter on the q value update should be used when training with demonstartions
-            num_demo: Number of episodes in to be used in the demonstration buffer
-            demo_batch_size: number of samples to be used from the demonstrations buffer, per mpi thread
-            prm_loss_weight: Weight corresponding to the primary loss
-            aux_loss_weight: Weight corresponding to the auxilliary loss also called the cloning loss
+            :param buffer_size (int): number of transitions that are stored in the replay buffer
+            :param hidden (int): number of units in the hidden layers
+            :param layers (int): number of hidden layers
+            :param network_class (str): the network class that should be used (e.g. 'baselines.her.ActorCritic')
+            :param polyak (float): coefficient for Polyak-averaging of the target network
+            :param batch_size (int): batch size for training
+            :param Q_lr (float): learning rate for the Q (critic) network
+            :param pi_lr (float): learning rate for the pi (actor) network
+            :param norm_eps (float): a small value used in the normalizer to avoid numerical instabilities
+            :param norm_clip (float): normalized inputs are clipped to be in [-norm_clip, norm_clip]
+            :param max_u (float): maximum action magnitude, i.e. actions are in [-max_u, max_u]
+            :param action_l2 (float): coefficient for L2 penalty on the actions
+            :param clip_obs (float): clip observations before normalization to be in [-clip_obs, clip_obs]
+            :param scope (str): the scope used for the TensorFlow graph
+            :param T (int): the time horizon for rollouts
+            :param rollout_batch_size (int): number of parallel rollouts per DDPG agent
+            :param subtract_goals (function): function that subtracts goals from each other
+            :param relative_goals (boolean): whether or not relative goals should be fed into the network
+            :param clip_pos_returns (boolean): whether or not positive returns should be clipped
+            :param clip_return (float): clip returns to be in [-clip_return, clip_return]
+            :param sample_transitions (function) function that samples from the replay buffer
+            :param gamma (float): gamma used for Q learning updates
+            :param reuse (boolean): whether or not the networks should be reused
+            :param bc_loss: whether or not the behavior cloning loss should be used as an auxilliary loss
+            :param q_filter: whether or not a filter on the q value update should be used when training with demonstartions
+            :param num_demo: Number of episodes in to be used in the demonstration buffer
+            :param demo_batch_size: number of samples to be used from the demonstrations buffer, per mpi thread
+            :param prm_loss_weight: Weight corresponding to the primary loss
+            :param aux_loss_weight: Weight corresponding to the auxilliary loss also called the cloning loss
         """
         if self.clip_return is None:
             self.clip_return = np.inf
@@ -112,16 +113,19 @@ class DDPG(object):
     def _random_action(self, n):
         return np.random.uniform(low=-self.max_u, high=self.max_u, size=(n, self.dimu))
 
-    # Not used
     def _preprocess_og(self, o, ag, g):
-        if self.relative_goals:
+        if self.relative_goals:  # no self.relative_goals
+            print("self.relative_goals: ", self.relative_goals)
             g_shape = g.shape
             g = g.reshape(-1, self.dimg)
             ag = ag.reshape(-1, self.dimg)
             g = self.subtract_goals(g, ag)
             g = g.reshape(*g_shape)
+
+        # Clip (limit) the values in an array.
         o = np.clip(o, -self.clip_obs, self.clip_obs)
         g = np.clip(g, -self.clip_obs, self.clip_obs)
+
         return o, g
 
     # Not used
@@ -133,10 +137,12 @@ class DDPG(object):
                     compute_Q=False):
         o, g = self._preprocess_og(o, ag, g)
         policy = self.target if use_target_net else self.main
+
         # values to compute
         vals = [policy.actor_tf]
         if compute_Q:
             vals += [policy.critic_actor_tf]
+
         # feed
         feed = {
             policy.o_tf: o.reshape(-1, self.dimo),
@@ -145,16 +151,19 @@ class DDPG(object):
         }
 
         ret = self.sess.run(vals, feed_dict=feed)
+
+        # print(ret)
+
         # action postprocessing
-        u = ret[0]
-        noise = noise_eps * self.max_u * np.random.randn(*u.shape)  # gaussian noise
-        u += noise
-        u = np.clip(u, -self.max_u, self.max_u)
-        u += np.random.binomial(1, random_eps, u.shape[0]).reshape(-1, 1) * (self._random_action(u.shape[0]) - u)  # eps-greedy
-        if u.shape[0] == 1:
-            u = u[0]
-        u = u.copy()
-        ret[0] = u
+        action = ret[0]
+        noise = noise_eps * self.max_u * np.random.randn(*action.shape)  # gaussian noise
+        action += noise
+        action = np.clip(action, -self.max_u, self.max_u)
+        action += np.random.binomial(1, random_eps, action.shape[0]).reshape(-1, 1) * (self._random_action(action.shape[0]) - action)  # eps-greedy
+        if action.shape[0] == 1:
+            action = action[0]
+        action = action.copy()
+        ret[0] = action
 
         if len(ret) == 1:
             return ret[0]
@@ -413,10 +422,20 @@ class DDPG(object):
         self.main_vars = self._vars('main/Q') + self._vars('main/pi')
         self.target_vars = self._vars('target/Q') + self._vars('target/pi')
         self.stats_vars = self._global_vars('o_stats') + self._global_vars('g_stats')
+
+        # list( map( lambda( assign() ), zip()))
         self.init_target_net_op = list(
-            map(lambda v: v[0].assign(v[1]), zip(self.target_vars, self.main_vars)))
+            map(    # Apply lambda to each item item in the zipped list
+                lambda v: v[0].assign(v[1]),
+                zip(self.target_vars, self.main_vars))
+            )
+
+        # Polyak-Ruppert averaging where most recent iterations are weighted more than past iterations.
         self.update_target_net_op = list(
-            map(lambda v: v[0].assign(self.polyak * v[0] + (1. - self.polyak) * v[1]), zip(self.target_vars, self.main_vars)))
+            map(    # Apply lambda to each item item in the zipped list
+                lambda v: v[0].assign(self.polyak * v[0] + (1. - self.polyak) * v[1]),  # polyak averaging
+                zip(self.target_vars, self.main_vars))  # [(target_vars, main_vars), (), ...]
+            )
 
         # initialize all variables
         tf.variables_initializer(self._global_vars('')).run()

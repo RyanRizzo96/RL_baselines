@@ -164,18 +164,18 @@ def learn(*, network, env, total_timesteps,
         tf_util.load_variables(load_path)
 
     rollout_params = {
-        'exploit': False,
+        'exploit': False,  # do not act optimally according to the current policy without any exploration
         'use_target_net': False,
         'use_demo_states': True,
-        'compute_Q': False,
+        'compute_Q': False,  # whether or not to compute the Q values alongside the actions
         'T': params['T'],
     }
 
     eval_params = {
-        'exploit': True,
+        'exploit': True,  # act optimally according to the current policy without any exploration
         'use_target_net': params['test_with_polyak'],
         'use_demo_states': False,
-        'compute_Q': True,
+        'compute_Q': True,  # whether or not to compute the Q values alongside the actions
         'T': params['T'],
     }
 
@@ -191,6 +191,7 @@ def learn(*, network, env, total_timesteps,
     n_cycles = params['n_cycles']
     print("rr/ n_cycles = ", n_cycles)
     print("rr/ n_batches", params['n_batches'])
+    print("rr/ n_test_rollouts", params['n_test_rollouts'])
     print("rr/ rollout time horizon = ", rollout_worker.T)
     print("rr/ rollout_batch_size = ", rollout_worker.rollout_batch_size)
 

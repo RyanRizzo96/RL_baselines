@@ -12,26 +12,28 @@ class RolloutWorker:
     def __init__(self, venv, policy, dims, logger, T, rollout_batch_size=1,
                  exploit=False, use_target_net=False, compute_Q=False, noise_eps=0,
                  random_eps=0, history_len=100, render=False, monitor=False, **kwargs):
-        """Rollout worker generates experience by interacting with one or many environments.
+        """
+        Rollout worker generates experience by interacting with one or many environments.
         Args:
-            venv: vectorized gym environments.
-            policy (object): the policy that is used to act
-            dims (dict of ints): the dimensions for observations (o), goals (g), and actions (u)
-            logger (object): the logger that is used by the rollout worker
-            rollout_batch_size (int): the number of parallel rollouts that should be used
-            exploit (boolean): whether or not to exploit, i.e. to act optimally according to the
+            :param venv: vectorized gym environments.
+            :param policy (object): the policy that is used to act
+            :param dims (dict of ints): the dimensions for observations (o), goals (g), and actions (u)
+            :param logger (object): the logger that is used by the rollout worker
+            :param rollout_batch_size (int): the number of parallel rollouts that should be used
+            :param exploit (boolean): whether or not to exploit, i.e. to act optimally according to the
                 current policy without any exploration
-            use_target_net (boolean): whether or not to use the target net for rollouts
-            compute_Q (boolean): whether or not to compute the Q values alongside the actions
-            noise_eps (float): scale of the additive Gaussian noise
-            random_eps (float): probability of selecting a completely random action
-            history_len (int): length of history for statistics smoothing
-            render (boolean): whether or not to render the rollouts
+            :param use_target_net (boolean): whether or not to use the target net for rollouts
+            :param compute_Q (boolean): whether or not to compute the Q values alongside the actions
+            :param noise_eps (float): scale of the additive Gaussian noise
+            :param random_eps (float): probability of selecting a completely random action
+            :param history_len (int): length of history for statistics smoothing
+            :param render (boolean): whether or not to render the rollouts
         """
 
         assert self.T > 0
 
         self.info_keys = [key.replace('info_', '') for key in dims.keys() if key.startswith('info_')]
+        print(dims.items())  # prints keys and values
 
         self.success_history = deque(maxlen=history_len)
         self.Q_history = deque(maxlen=history_len)
@@ -52,26 +54,30 @@ class RolloutWorker:
         """
         self.reset_all_rollouts()
 
-        # compute observations
-        o = np.empty((self.rollout_batch_size, self.dims['o']), np.float32)  # observations
+        # compute observations. Initialize array of zeros
+        observations = np.empty((self.rollout_batch_size, self.dims['o']), np.float32)  # observations
         ag = np.empty((self.rollout_batch_size, self.dims['g']), np.float32)  # achieved goals
-        o[:] = self.initial_o
+        # Whole array assigned
+        observations[:] = self.initial_o
         ag[:] = self.initial_ag
 
         # generate episodes
         obs, achieved_goals, acts, goals, successes = [], [], [], [], []
         dones = []
+
+        # print(self.info_keys)
         info_values = [np.empty((self.T - 1, self.rollout_batch_size, self.dims['info_' + key]), np.float32) for key in self.info_keys]
         Qs = []
+
         for t in range(self.T):
             policy_output = self.policy.get_actions(
-                o, ag, self.g,
+                observations, ag, self.g,
                 compute_Q=self.compute_Q,
                 noise_eps=self.noise_eps if not self.exploit else 0.,
                 random_eps=self.random_eps if not self.exploit else 0.,
                 use_target_net=self.use_target_net)
 
-            if self.compute_Q:
+            if self.compute_Q:  # Evaluator  only
                 u, Q = policy_output
                 Qs.append(Q)
             else:
@@ -81,9 +87,10 @@ class RolloutWorker:
                 # The non-batched case should still have a reasonable shape.
                 u = u.reshape(1, -1)
 
-            o_new = np.empty((self.rollout_batch_size, self.dims['o']))
-            ag_new = np.empty((self.rollout_batch_size, self.dims['g']))
-            success = np.zeros(self.rollout_batch_size)
+            # o_new = np.empty((self.rollout_batch_size, self.dims['o']))
+            # ag_new = np.empty((self.rollout_batch_size, self.dims['g']))
+            # success = np.zeros(self.rollout_batch_size)
+
             # compute new states and observations
             obs_dict_new, _, done, info = self.venv.step(u)
             o_new = obs_dict_new['observation']
@@ -107,30 +114,35 @@ class RolloutWorker:
                 return self.generate_rollouts()
 
             dones.append(done)
-            obs.append(o.copy())
+            obs.append(observations.copy())
             achieved_goals.append(ag.copy())
             successes.append(success.copy())
             acts.append(u.copy())
             goals.append(self.g.copy())
-            o[...] = o_new
+            observations[...] = o_new
             ag[...] = ag_new
-        obs.append(o.copy())
+        obs.append(observations.copy())
         achieved_goals.append(ag.copy())
 
         episode = dict(o=obs,
                        u=acts,
                        g=goals,
                        ag=achieved_goals)
+
         for key, value in zip(self.info_keys, info_values):
+            # print(key, value)
             episode['info_{}'.format(key)] = value
 
         # stats
         successful = np.array(successes)[-1, :]
         assert successful.shape == (self.rollout_batch_size,)
         success_rate = np.mean(successful)
+        print("success_rate: ", success_rate)
         self.success_history.append(success_rate)
-        if self.compute_Q:
+
+        if self.compute_Q:  # Evaluator only
             self.Q_history.append(np.mean(Qs))
+
         self.n_episodes += self.rollout_batch_size
 
         return convert_episode_to_batch_major(episode)
@@ -158,8 +170,10 @@ class RolloutWorker:
         """
         logs = []
         logs += [('success_rate', np.mean(self.success_history))]
-        if self.compute_Q:
+
+        if self.compute_Q:  # Evaluator only
             logs += [('mean_Q', np.mean(self.Q_history))]
+
         logs += [('episode', self.n_episodes)]
 
         if prefix != '' and not prefix.endswith('/'):
