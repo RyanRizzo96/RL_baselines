@@ -253,7 +253,7 @@ class DDPG(object):
     def _grads(self):
         # Avoid feed_dict here for performance!
         critic_loss, actor_loss, critic_grad, actor_grad = self.sess.run([
-            self.critic_loss_tf,
+            self.critic_loss_tf,  # MSE of target_tf - main.critic_tf
             self.main.critic_actor_tf,
             self.critic_grad_tf,
             self.actor_grad_tf
@@ -265,17 +265,18 @@ class DDPG(object):
         self.actor_adam.update(actor_grad, self.pi_lr)
 
     def sample_batch(self):
-        if self.bc_loss: #use demonstration buffer to sample as well if bc_loss flag is set TRUE
+        if self.bc_loss:  # use demonstration buffer to sample as well if bc_loss flag is set TRUE
+            print("Using demonstration buffer samples")
             transitions = self.buffer.sample(self.batch_size - self.demo_batch_size)
             global DEMO_BUFFER
-            transitions_demo = DEMO_BUFFER.sample(self.demo_batch_size) #sample from the demo buffer
+            transitions_demo = DEMO_BUFFER.sample(self.demo_batch_size)  # sample from the demo buffer
             for k, values in transitions_demo.items():
                 rolloutV = transitions[k].tolist()
                 for v in values:
                     rolloutV.append(v.tolist())
                 transitions[k] = np.array(rolloutV)
         else:
-            transitions = self.buffer.sample(self.batch_size) #otherwise only sample from primary buffer
+            transitions = self.buffer.sample(self.batch_size)  # otherwise only sample from primary buffer
 
         o, o_2, g = transitions['o'], transitions['o_2'], transitions['g']
         ag, ag_2 = transitions['ag'], transitions['ag_2']
@@ -392,12 +393,15 @@ class DDPG(object):
             self.actor_loss_tf = -tf.reduce_mean(self.main.critic_actor_tf)
             self.actor_loss_tf += self.action_l2 * tf.reduce_mean(tf.square(self.main.actor_tf / self.max_u))
 
+        # Constructs symbolic derivatives of sum of critic_loss_tf vs _vars('main/Q')
         critic_grads_tf = tf.gradients(self.critic_loss_tf, self._vars('main/Q'))
         actor_grads_tf = tf.gradients(self.actor_loss_tf, self._vars('main/pi'))
         assert len(self._vars('main/Q')) == len(critic_grads_tf)
         assert len(self._vars('main/pi')) == len(actor_grads_tf)
         self.critic_grads_vars_tf = zip(critic_grads_tf, self._vars('main/Q'))
         self.actor_grads_vars_tf = zip(actor_grads_tf, self._vars('main/pi'))
+
+        # Flattens variables and their gradients.
         self.critic_grad_tf = flatten_grads(grads=critic_grads_tf, var_list=self._vars('main/Q'))
         self.actor_grad_tf = flatten_grads(grads=actor_grads_tf, var_list=self._vars('main/pi'))
 
@@ -405,7 +409,7 @@ class DDPG(object):
         self.Q_adam = MpiAdam(self._vars('main/Q'), scale_grad_by_procs=False)
         self.actor_adam = MpiAdam(self._vars('main/pi'), scale_grad_by_procs=False)
 
-        # polyak averaging
+        # polyak averaging used to update target network
         self.main_vars = self._vars('main/Q') + self._vars('main/pi')
         self.target_vars = self._vars('target/Q') + self._vars('target/pi')
         self.stats_vars = self._global_vars('o_stats') + self._global_vars('g_stats')

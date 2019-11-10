@@ -36,13 +36,15 @@ def train(*, policy, rollout_worker, evaluator,
 
     if policy.bc_loss == 1: policy.init_demo_buffer(demo_file)  # initialize demo buffer if training with demonstrations
 
-    # num_timesteps = n_epochs * n_cycles * rollout_length * number of rollout workers
+    # total_timesteps = n_epochs * n_cycles * rollout_length * number of rollout workers
     for epoch in range(n_epochs):
         # train
         rollout_worker.clear_history()
         for _ in range(n_cycles):
             episode = rollout_worker.generate_rollouts()    # First we generate a rollout then we store it
             policy.ddpg_store_episode(episode)
+
+            # After generating and storing rollout we train policy
             for _ in range(n_batches):
                 policy.ddpg_train()
             policy.ddpg_update_target_net()
@@ -130,7 +132,7 @@ def learn(*, network, env, total_timesteps,
     params = config.prepare_params(params)
     # params['rollout_batch_size'] = env.num_envs  # Not sure about this. Does this override the value in config.py?
     params['rollout_batch_size'] = env.num_envs
-    print("env.num_envs - ", env.num_envs)
+    print("rr/ env.num_envs - ", env.num_envs)
 
     if demo_file is not None:
         params['bc_loss'] = 1
@@ -187,10 +189,14 @@ def learn(*, network, env, total_timesteps,
     evaluator = RolloutWorker(eval_env, policy, dims, logger, **eval_params)
 
     n_cycles = params['n_cycles']
-    print("n_cycles = ", n_cycles)
+    print("rr/ n_cycles = ", n_cycles)
+    print("rr/ n_batches", params['n_batches'])
+    print("rr/ rollout time horizon = ", rollout_worker.T)
+    print("rr/ rollout_batch_size = ", rollout_worker.rollout_batch_size)
 
+    # // for division without remainder
     n_epochs = total_timesteps // n_cycles // rollout_worker.T // rollout_worker.rollout_batch_size
-    print("n_epochs = ", n_epochs)
+    print("rr/ n_epochs = ", n_epochs)
 
     return train(
         save_path=save_path, policy=policy, rollout_worker=rollout_worker,
