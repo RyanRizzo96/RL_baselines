@@ -235,7 +235,7 @@ class TensorBoardOutputFormat(KVWriter):
             return self.tf.Summary.Value(**kwargs)
         summary = self.tf.Summary(value=[summary_val(k, v) for k, v in kvs.items()])
         event = self.event_pb2.Event(wall_time=time.time(), summary=summary)
-        event.step = self.step # is there any reason why you'd want to specify the step?
+        event.step = self.step  # is there any reason why you'd want to specify the step?
         self.writer.WriteEvent(event)
         self.writer.Flush()
         self.step += 1
@@ -606,7 +606,7 @@ def configure(folder=None, format_strs=None):
     if folder is None:
         folder = os.getenv('OPENAI_LOGDIR')
     if folder is None:
-        folder = os.path.join("results/her_test/rollout_batch_size", datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
+        folder = os.path.join("results/her_test/understanding", datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
     assert isinstance(folder, str)
     os.makedirs(folder, exist_ok=True)
     rank = get_rank_without_mpi_import()
