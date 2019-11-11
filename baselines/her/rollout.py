@@ -37,10 +37,15 @@ class RolloutWorker:
 
         self.success_history = deque(maxlen=history_len)
         self.Q_history = deque(maxlen=history_len)
+        self.reward_history = deque(maxlen=history_len)
 
         self.n_episodes = 0
         self.reset_all_rollouts()
         self.clear_history()
+        self.episode_counter = 0
+        self.episode_reward = 0
+        print(type(self.episode_reward))
+        print(type(self.episode_counter))
 
     def reset_all_rollouts(self):
         self.obs_dict = self.venv.reset()
@@ -62,13 +67,17 @@ class RolloutWorker:
         ag[:] = self.initial_ag
 
         # generate episodes
-        obs, achieved_goals, acts, goals, successes = [], [], [], [], []
+        obs, achieved_goals, acts, goals, successes, ep_reward_list = [], [], [], [], [], []
+
+        ep_reward = 0
+        env_step_counter = 0
         dones = []
 
         # print(self.info_keys)
         info_values = [np.empty((self.T - 1, self.rollout_batch_size, self.dims['info_' + key]), np.float32) for key in self.info_keys]
         Qs = []
 
+        # Do for rollout time horizon
         for t in range(self.T):
             policy_output = self.policy.get_actions(
                 observations, ag, self.g,
@@ -92,7 +101,22 @@ class RolloutWorker:
             # success = np.zeros(self.rollout_batch_size)
 
             # compute new states and observations
-            obs_dict_new, _, done, info = self.venv.step(u)
+            obs_dict_new, reward, done, info = self.venv.step(u)
+
+            # obs_dict_new {'achieved_goal': array([[1.3519502 , 0.73200333, 0.5274352 ]], dtype=float32),
+            # 'desired_goal': array([[1.2729537 , 0.62809974, 0.51270455]], dtype=float32),
+            # 'observation': array([[ 1.3519502e+00,  7.3200333e-01,  5.2743518e-01,  0.0000000e+00,
+            # 0.0000000e+00,  1.7498910e-03, -3.6469495e-03, -1.8837147e-03,
+            # -5.2045716e-06,  1.0831429e-04]], dtype=float32)}
+            # reward [-1.]
+            # info [{'is_success': 0.0}]
+
+            # print(reward)
+            # ep_reward_list.append(ep_reward)
+            ep_reward += reward
+            env_step_counter += 1
+            # print("env_step_counter, ep_reward ", env_step_counter, ep_reward)
+
             o_new = obs_dict_new['observation']
             ag_new = obs_dict_new['achieved_goal']
             success = np.array([i.get('is_success', 0.0) for i in info])
@@ -121,6 +145,11 @@ class RolloutWorker:
             goals.append(self.g.copy())
             observations[...] = o_new
             ag[...] = ag_new
+
+        self.episode_counter += 1
+        self.episode_reward = ep_reward[-1]  # Appending total ep_reward to episode_reward
+        #print("episode_counter, episode_reward", self.episode_counter, self.episode_reward)
+
         obs.append(observations.copy())
         achieved_goals.append(ag.copy())
 
@@ -137,8 +166,13 @@ class RolloutWorker:
         successful = np.array(successes)[-1, :]
         assert successful.shape == (self.rollout_batch_size,)
         success_rate = np.mean(successful)
-        print("success_rate: ", success_rate)
-        self.success_history.append(success_rate)
+
+        # print("success_rate: ", success_rate)
+        self.success_history.append(success_rate)  # Used for tensorboard
+        # print(self.success_history)
+
+        self.reward_history.append(self.episode_reward)  # Used for tensorboard
+        # print(self.reward_history)
 
         if self.compute_Q:  # Evaluator only
             self.Q_history.append(np.mean(Qs))
@@ -150,7 +184,10 @@ class RolloutWorker:
     def clear_history(self):
         """Clears all histories that are used for statistics
         """
+        print("New worker")
+        self.episode_counter = 0
         self.success_history.clear()
+        self.reward_history.clear()
         self.Q_history.clear()
 
     def current_success_rate(self):
@@ -168,11 +205,18 @@ class RolloutWorker:
     def logs(self, prefix='worker'):
         """Generates a dictionary that contains all collected statistics.
         """
+
+        # print("self.reward_history", self.reward_history)
+
         logs = []
         logs += [('success_rate', np.mean(self.success_history))]
+        # print(np.mean(self.success_history))
+
+        logs += [('avg_episode_reward', np.mean(self.reward_history))]
+        print(np.mean(self.reward_history))
 
         if self.compute_Q:  # Evaluator only
-            logs += [('mean_Q', np.mean(self.Q_history))]
+            logs += [('mean_Q_val', np.mean(self.Q_history))]
 
         logs += [('episode', self.n_episodes)]
 
