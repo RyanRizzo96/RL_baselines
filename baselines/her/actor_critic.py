@@ -21,7 +21,7 @@ class ActorCritic:
             layers (int): number of hidden layers
         """
 
-        # Calls util.py stpre_args(methos)
+        # Calls util.py stpre_args(method)
         self.o_tf = inputs_tf['o']
         self.g_tf = inputs_tf['g']
         self.u_tf = inputs_tf['u']

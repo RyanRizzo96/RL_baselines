@@ -135,22 +135,26 @@ class DDPG(object):
 
     def get_actions(self, o, ag, g, noise_eps=0., random_eps=0., use_target_net=False,
                     compute_Q=False):
+
         o, g = self._preprocess_og(o, ag, g)
+
+        # Use target network use main network
         policy = self.target if use_target_net else self.main
 
         # values to compute
-        vals = [policy.actor_tf]
+        policy_weights = [policy.actor_tf]
         if compute_Q:
-            vals += [policy.critic_actor_tf]
+            policy_weights += [policy.critic_actor_tf]
 
         # feed
-        feed = {
+        agent_feed = {
             policy.o_tf: o.reshape(-1, self.dimo),
             policy.g_tf: g.reshape(-1, self.dimg),
             policy.u_tf: np.zeros((o.size // self.dimo, self.dimu), dtype=np.float32)
         }
 
-        ret = self.sess.run(vals, feed_dict=feed)
+        # Evaluating policy weights with agent information
+        ret = self.sess.run(policy_weights, feed_dict=agent_feed)
 
         # print(ret)
 

@@ -87,21 +87,21 @@ class RolloutWorker:
                 use_target_net=self.use_target_net)
 
             if self.compute_Q:  # Evaluator  only
-                u, Q = policy_output
+                action, Q = policy_output
                 Qs.append(Q)
             else:
-                u = policy_output
+                action = policy_output
 
-            if u.ndim == 1:
+            if action.ndim == 1:
                 # The non-batched case should still have a reasonable shape.
-                u = u.reshape(1, -1)
+                action = action.reshape(1, -1)
 
             # o_new = np.empty((self.rollout_batch_size, self.dims['o']))
             # ag_new = np.empty((self.rollout_batch_size, self.dims['g']))
             # success = np.zeros(self.rollout_batch_size)
 
             # compute new states and observations
-            obs_dict_new, reward, done, info = self.venv.step(u)
+            obs_dict_new, reward, done, info = self.venv.step(action)
 
             # obs_dict_new {'achieved_goal': array([[1.3519502 , 0.73200333, 0.5274352 ]], dtype=float32),
             # 'desired_goal': array([[1.2729537 , 0.62809974, 0.51270455]], dtype=float32),
@@ -117,8 +117,8 @@ class RolloutWorker:
             env_step_counter += 1
             # print("env_step_counter, ep_reward ", env_step_counter, ep_reward)
 
-            o_new = obs_dict_new['observation']
-            ag_new = obs_dict_new['achieved_goal']
+            new_observation = obs_dict_new['observation']
+            new_achieved_goal = obs_dict_new['achieved_goal']
             success = np.array([i.get('is_success', 0.0) for i in info])
 
             if any(done):
@@ -132,7 +132,7 @@ class RolloutWorker:
                 for idx, key in enumerate(self.info_keys):
                     info_values[idx][t, i] = info[i][key]
 
-            if np.isnan(o_new).any():
+            if np.isnan(new_observation).any():
                 self.logger.warn('NaN caught during rollout generation. Trying again...')
                 self.reset_all_rollouts()
                 return self.generate_rollouts()
@@ -141,14 +141,14 @@ class RolloutWorker:
             obs.append(observations.copy())
             achieved_goals.append(ag.copy())
             successes.append(success.copy())
-            acts.append(u.copy())
+            acts.append(action.copy())
             goals.append(self.g.copy())
-            observations[...] = o_new
-            ag[...] = ag_new
+            observations[...] = new_observation
+            ag[...] = new_achieved_goal
 
         self.episode_counter += 1
         self.episode_reward = ep_reward[-1]  # Appending total ep_reward to episode_reward
-        #print("episode_counter, episode_reward", self.episode_counter, self.episode_reward)
+        # print("episode_counter, episode_reward", self.episode_counter, self.episode_reward)
 
         obs.append(observations.copy())
         achieved_goals.append(ag.copy())
