@@ -144,7 +144,7 @@ class DDPG(object):
         # values to compute
         policy_weights = [policy.actor_tf]
         if compute_Q:
-            policy_weights += [policy.critic_actor_tf]
+            policy_weights += [policy.critic_with_actor_tf]
 
         # feed
         agent_feed = {
@@ -267,9 +267,9 @@ class DDPG(object):
         # Avoid feed_dict here for performance!
         critic_loss, actor_loss, critic_grad, actor_grad = self.sess.run([
             self.critic_loss_tf,  # MSE of target_tf - main.critic_tf
-            self.main.critic_actor_tf,
-            self.critic_grad_tf,
-            self.actor_grad_tf
+            self.main.critic_with_actor_tf,  # actor_loss
+            self.critic_grads,
+            self.actor_grads
         ])
         return critic_loss, actor_loss, critic_grad, actor_grad
 
@@ -308,9 +308,9 @@ class DDPG(object):
     def ddpg_train(self, stage=True):
         if stage:
             self.stage_batch()
-        critic_loss, actor_loss, Q_grad, pi_grad = self._grads()
+        self.critic_loss, self.actor_loss, Q_grad, pi_grad = self._grads()
         self._update(Q_grad, pi_grad)
-        return critic_loss, actor_loss
+        return self.critic_loss, self.actor_loss
 
     def _init_target_net(self):
         self.sess.run(self.init_target_net_op)
@@ -374,8 +374,9 @@ class DDPG(object):
         assert len(self._vars("main")) == len(self._vars("target"))
 
         # loss functions
-        target_critic_actor_tf = self.target.critic_actor_tf
+        target_critic_actor_tf = self.target.critic_with_actor_tf
         clip_range = (-self.clip_return, 0. if self.clip_pos_returns else np.inf)
+
         target_tf = tf.clip_by_value(batch_tf['r'] + self.gamma * target_critic_actor_tf, *clip_range)
 
         # MSE of target_tf - critic_tf
@@ -403,7 +404,7 @@ class DDPG(object):
 
         else:  # If  not training with demonstrations
             print("Not training with demonstration")
-            self.actor_loss_tf = -tf.reduce_mean(self.main.critic_actor_tf)
+            self.actor_loss_tf = -tf.reduce_mean(self.main.critic_with_actor_tf)
             self.actor_loss_tf += self.action_l2 * tf.reduce_mean(tf.square(self.main.actor_tf / self.max_u))
 
         # Constructs symbolic derivatives of sum of critic_loss_tf vs _vars('main/Q')
@@ -415,8 +416,8 @@ class DDPG(object):
         self.actor_grads_vars_tf = zip(actor_grads_tf, self._vars('main/pi'))
 
         # Flattens variables and their gradients.
-        self.critic_grad_tf = flatten_grads(grads=critic_grads_tf, var_list=self._vars('main/Q'))
-        self.actor_grad_tf = flatten_grads(grads=actor_grads_tf, var_list=self._vars('main/pi'))
+        self.critic_grads = flatten_grads(grads=critic_grads_tf, var_list=self._vars('main/Q'))
+        self.actor_grads = flatten_grads(grads=actor_grads_tf, var_list=self._vars('main/pi'))
 
         # optimizers
         self.Q_adam = MpiAdam(self._vars('main/Q'), scale_grad_by_procs=False)
@@ -448,6 +449,9 @@ class DDPG(object):
 
     def logs(self, prefix=''):
         logs = []
+        logs += [('critic_loss', np.mean(self.critic_loss))]
+        logs += [('actor_loss', np.mean(self.actor_loss))]
+
         logs += [('stats_o/mean', np.mean(self.sess.run([self.o_stats.mean])))]
         logs += [('stats_o/std', np.mean(self.sess.run([self.o_stats.std])))]
         logs += [('stats_g/mean', np.mean(self.sess.run([self.g_stats.mean])))]

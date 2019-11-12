@@ -1,5 +1,5 @@
 import tensorflow as tf
-from baselines.her.util import store_args, nn
+from baselines.her.util import store_args, create_nerual_net
 
 
 class ActorCritic:
@@ -25,6 +25,10 @@ class ActorCritic:
         self.o_tf = inputs_tf['o']
         self.g_tf = inputs_tf['g']
         self.u_tf = inputs_tf['u']
+        print("INIT Actor-Critic with", hidden, "hidden units and ", layers, "hidden layers")
+        # print("inputs_tf['u']", self.u_tf)
+        # print("inputs_tf['o']", self.o_tf)
+        # print("inputs_tf['g']", self.g_tf)
 
         # Prepare inputs for actor and critic.
         o = self.o_stats.normalize(self.o_tf)
@@ -35,15 +39,17 @@ class ActorCritic:
 
         # Creates actor Actor network
         with tf.variable_scope('pi'):
-            self.actor_tf = self.max_u * tf.tanh(nn(
+            self.actor_tf = self.max_u * tf.tanh(create_nerual_net(
                 input_actor, [self.hidden] * self.layers + [self.dimu]))
 
         # Creates actor Critic network
         with tf.variable_scope('Q'):
+            # Critic receives obs, goals from env and output of actor as inputs
             input_critic = tf.concat(axis=1, values=[o, g, self.actor_tf / self.max_u])
-            self.critic_actor_tf = nn(input_critic, [self.hidden] * self.layers + [1])
+            # For policy training
+            self.critic_with_actor_tf = create_nerual_net(input_critic, [self.hidden] * self.layers + [1])
 
             # for Critic - Value Function training
             input_critic = tf.concat(axis=1, values=[o, g, self.u_tf / self.max_u])
             self._input_critic = input_critic  # exposed for tests
-            self.critic_tf = nn(input_critic, [self.hidden] * self.layers + [1], reuse=True)
+            self.critic_tf = create_nerual_net(input_critic, [self.hidden] * self.layers + [1], reuse=True)
