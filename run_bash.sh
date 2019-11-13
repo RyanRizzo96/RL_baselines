@@ -6,7 +6,7 @@ source ~/.virtualenvs/baseline_env/bin/activate
 
 export OPENAI_LOG_FORMAT=stdout,log,csv,tensorboard
 
-mpirun -np 19 python3 -m baselines.run --alg=her --env=FetchPush-v1  --num_timesteps=100000
+python3 -m baselines.run --alg=her --env=FetchReach-v1  --num_timesteps=5000
 
 #coverage run -m baselines.run --alg=her --env=FetchReach-v1  --num_timesteps=5000
 #coverage report -m -i

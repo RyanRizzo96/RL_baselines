@@ -26,6 +26,8 @@ def train(*, policy, rollout_worker, evaluator,
           save_path, demo_file, **kwargs):
     rank = MPI.COMM_WORLD.Get_rank()
 
+    c_loss, a_loss, critic_loss_avg, actor_loss_avg = 0, 0, 0, 0
+
     if save_path:
         latest_policy_path = os.path.join(save_path, 'policy_latest.pkl')
         best_policy_path = os.path.join(save_path, 'policy_best.pkl')
@@ -46,8 +48,15 @@ def train(*, policy, rollout_worker, evaluator,
 
             # After generating and storing rollout we train policy
             for _ in range(n_batches):
-                policy.ddpg_train()
+                c_loss, a_loss = policy.ddpg_train()
+                # print("actor loss: ", a_loss)
+                # print("critic loss: ", c_loss)
             policy.ddpg_update_target_net()
+
+            critic_loss_avg = np.mean(c_loss)
+            actor_loss_avg = np.mean(a_loss)
+            # print("actor loss: ", actor_loss_avg)
+            # print("critic loss: ", critic_loss_avg)
 
         # TODO: What is difference between rollout_worker and evaluator
         # test
@@ -56,7 +65,7 @@ def train(*, policy, rollout_worker, evaluator,
             evaluator.generate_rollouts()
 
         # record logs
-        logger.record_tabular('epoch', epoch)
+        # logger.record_tabular('epoch', epoch)
         for key, val in evaluator.logs('test'):
             logger.record_tabular(key, mpi_average(val))
         for key, val in rollout_worker.logs('train'):

@@ -175,9 +175,9 @@ class DDPG(object):
             return ret
 
     # Not used
-    def init_demo_buffer(self, demoDataFile, update_stats=True): #function that initializes the demo buffer
+    def init_demo_buffer(self, demoDataFile, update_stats=True):  # function that initializes the demo buffer
 
-        demoData = np.load(demoDataFile) #load the demonstration data from data file
+        demoData = np.load(demoDataFile)  # load the demonstration data from data file
         info_keys = [key.replace('info_', '') for key in self.input_dims.keys() if key.startswith('info_')]
         info_values = [np.empty((self.T - 1, 1, self.input_dims['info_' + key]), np.float32) for key in info_keys]
 
@@ -260,8 +260,8 @@ class DDPG(object):
         return self.buffer.get_current_size()
 
     def _sync_optimizers(self):
-        self.Q_adam.sync()
-        self.actor_adam.sync()
+        self.critic_optimiser.sync()
+        self.actor_optimiser.sync()
 
     def _grads(self):
         # Avoid feed_dict here for performance!
@@ -273,9 +273,9 @@ class DDPG(object):
         ])
         return critic_loss, actor_loss, critic_grad, actor_grad
 
-    def _update(self, critic_grad, actor_grad):
-        self.Q_adam.update(critic_grad, self.Q_lr)
-        self.actor_adam.update(actor_grad, self.pi_lr)
+    def _update(self, critic_grads, actor_grads):
+        self.critic_optimiser.update(critic_grads, self.Q_lr)
+        self.actor_optimiser.update(actor_grads, self.pi_lr)
 
     def sample_batch(self):
         if self.bc_loss:  # use demonstration buffer to sample as well if bc_loss flag is set TRUE
@@ -308,9 +308,13 @@ class DDPG(object):
     def ddpg_train(self, stage=True):
         if stage:
             self.stage_batch()
+
         self.critic_loss, self.actor_loss, Q_grad, pi_grad = self._grads()
+
+        # Update gradients for actor and critic networks
         self._update(Q_grad, pi_grad)
-        return self.critic_loss, self.actor_loss
+
+        return self.critic_loss, np.mean(self.actor_loss)
 
     def _init_target_net(self):
         self.sess.run(self.init_target_net_op)
@@ -382,30 +386,31 @@ class DDPG(object):
         # MSE of target_tf - critic_tf
         self.critic_loss_tf = tf.reduce_mean(tf.square(tf.stop_gradient(target_tf) - self.main.critic_tf))
 
-        # train with demonstrations and use bc_loss and q_filter both
-        if self.bc_loss == 1 and self.q_filter == 1:
-            print("Training with demonstration")
-            # where is the demonstrator action better than actor action according to the critic? choose samples only
-            maskMain = tf.reshape(tf.boolean_mask(self.main.critic_tf > self.main.critic_actor_tf, mask), [-1])
-            # define the cloning loss on the actor's actions only on the samples which adhere to the above masks
-            self.cloning_loss_tf = tf.reduce_sum(tf.square(tf.boolean_mask(tf.boolean_mask((self.main.actor_tf), mask), maskMain, axis=0) - tf.boolean_mask(tf.boolean_mask((batch_tf['u']), mask), maskMain, axis=0)))
-            # primary loss scaled by it's respective weight prm_loss_weight
-            self.actor_loss_tf = -self.prm_loss_weight * tf.reduce_mean(self.main.critic_actor_tf)
-            # L2 loss on action values scaled by the same weight prm_loss_weight
-            self.actor_loss_tf += self.prm_loss_weight * self.action_l2 * tf.reduce_mean(tf.square(self.main.actor_tf / self.max_u))
-            # adding the cloning loss to the actor loss as an auxiliary loss scaled by its weight aux_loss_weight
-            self.actor_loss_tf += self.aux_loss_weight * self.cloning_loss_tf
+        # # train with demonstrations and use bc_loss and q_filter both
+        # if self.bc_loss == 1 and self.q_filter == 1:
+        #     print("Training with demonstration")
+        #     # where is the demonstrator action better than actor action according to the critic? choose samples only
+        #     maskMain = tf.reshape(tf.boolean_mask(self.main.critic_tf > self.main.critic_actor_tf, mask), [-1])
+        #     # define the cloning loss on the actor's actions only on the samples which adhere to the above masks
+        #     self.cloning_loss_tf = tf.reduce_sum(tf.square(tf.boolean_mask(tf.boolean_mask((self.main.actor_tf), mask), maskMain, axis=0) - tf.boolean_mask(tf.boolean_mask((batch_tf['u']), mask), maskMain, axis=0)))
+        #     # primary loss scaled by it's respective weight prm_loss_weight
+        #     self.actor_loss_tf = -self.prm_loss_weight * tf.reduce_mean(self.main.critic_actor_tf)
+        #     # L2 loss on action values scaled by the same weight prm_loss_weight
+        #     self.actor_loss_tf += self.prm_loss_weight * self.action_l2 * tf.reduce_mean(tf.square(self.main.actor_tf / self.max_u))
+        #     # adding the cloning loss to the actor loss as an auxiliary loss scaled by its weight aux_loss_weight
+        #     self.actor_loss_tf += self.aux_loss_weight * self.cloning_loss_tf
+        #
+        # elif self.bc_loss == 1 and self.q_filter == 0: # train with demonstrations without q_filter
+        #     self.cloning_loss_tf = tf.reduce_sum(tf.square(tf.boolean_mask((self.main.actor_tf), mask) - tf.boolean_mask((batch_tf['u']), mask)))
+        #     self.actor_loss_tf = -self.prm_loss_weight * tf.reduce_mean(self.main.critic_actor_tf)
+        #     self.actor_loss_tf += self.prm_loss_weight * self.action_l2 * tf.reduce_mean(tf.square(self.main.actor_tf / self.max_u))
+        #     self.actor_loss_tf += self.aux_loss_weight * self.cloning_loss_tf
+        #
+        # else:  # If  not training with demonstrations
 
-        elif self.bc_loss == 1 and self.q_filter == 0: # train with demonstrations without q_filter
-            self.cloning_loss_tf = tf.reduce_sum(tf.square(tf.boolean_mask((self.main.actor_tf), mask) - tf.boolean_mask((batch_tf['u']), mask)))
-            self.actor_loss_tf = -self.prm_loss_weight * tf.reduce_mean(self.main.critic_actor_tf)
-            self.actor_loss_tf += self.prm_loss_weight * self.action_l2 * tf.reduce_mean(tf.square(self.main.actor_tf / self.max_u))
-            self.actor_loss_tf += self.aux_loss_weight * self.cloning_loss_tf
-
-        else:  # If  not training with demonstrations
-            print("Not training with demonstration")
-            self.actor_loss_tf = -tf.reduce_mean(self.main.critic_with_actor_tf)
-            self.actor_loss_tf += self.action_l2 * tf.reduce_mean(tf.square(self.main.actor_tf / self.max_u))
+        print("Not training with demonstration")
+        self.actor_loss_tf = -tf.reduce_mean(self.main.critic_with_actor_tf)
+        self.actor_loss_tf += self.action_l2 * tf.reduce_mean(tf.square(self.main.actor_tf / self.max_u))
 
         # Constructs symbolic derivatives of sum of critic_loss_tf vs _vars('main/Q')
         critic_grads_tf = tf.gradients(self.critic_loss_tf, self._vars('main/Q'))
@@ -420,8 +425,8 @@ class DDPG(object):
         self.actor_grads = flatten_grads(grads=actor_grads_tf, var_list=self._vars('main/pi'))
 
         # optimizers
-        self.Q_adam = MpiAdam(self._vars('main/Q'), scale_grad_by_procs=False)
-        self.actor_adam = MpiAdam(self._vars('main/pi'), scale_grad_by_procs=False)
+        self.critic_optimiser = MpiAdam(self._vars('main/Q'), scale_grad_by_procs=False)
+        self.actor_optimiser = MpiAdam(self._vars('main/pi'), scale_grad_by_procs=False)
 
         # polyak averaging used to update target network
         self.main_vars = self._vars('main/Q') + self._vars('main/pi')
@@ -449,8 +454,8 @@ class DDPG(object):
 
     def logs(self, prefix=''):
         logs = []
-        logs += [('actor_critic/critic_loss', np.mean(self.critic_loss))]
-        logs += [('actor_critic/actor_loss', np.mean(self.actor_loss))]
+        # logs += [('actor_critic/critic_loss', critic_loss_avg)]
+        # logs += [('actor_critic/actor_loss', actor_loss_avg)]
 
         logs += [('stats_o/mean', np.mean(self.sess.run([self.o_stats.mean])))]
         logs += [('stats_o/std', np.mean(self.sess.run([self.o_stats.std])))]

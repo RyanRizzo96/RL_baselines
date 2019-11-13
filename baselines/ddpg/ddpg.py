@@ -188,7 +188,7 @@ def learn(network, env,
             eval_qs = []
             if eval_env is not None:
                 nenvs_eval = eval_obs.shape[0]
-                eval_episode_reward = np.zeros(nenvs_eval, dtype = np.float32)
+                eval_episode_reward = np.zeros(nenvs_eval, dtype=np.float32)
                 for t_rollout in range(nb_eval_steps):
                     eval_action, eval_q, _, _ = agent.step(eval_obs, apply_noise=False, compute_Q=True)
                     eval_obs, eval_r, eval_done, eval_info = eval_env.step(max_action * eval_action)  # scale for execution in env (as far as DDPG is concerned, every action is in [-1, 1])

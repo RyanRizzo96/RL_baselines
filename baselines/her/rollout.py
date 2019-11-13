@@ -77,7 +77,9 @@ class RolloutWorker:
         info_values = [np.empty((self.T - 1, self.rollout_batch_size, self.dims['info_' + key]), np.float32) for key in self.info_keys]
         Qs = []
 
-        # Do for rollout time horizon
+        # Do for rollout time horizon. This is equalt o 50 because episode length is 50
+        # Not really much use if we go for a longer trajectory. If anything, shorten and test results
+        # TODO: Shorten trajectory and check results
         for t in range(self.T):
             policy_output = self.policy.get_actions(
                 observations, ag, self.g,
