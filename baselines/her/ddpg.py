@@ -449,8 +449,8 @@ class DDPG(object):
 
     def logs(self, prefix=''):
         logs = []
-        logs += [('critic_loss', np.mean(self.critic_loss))]
-        logs += [('actor_loss', np.mean(self.actor_loss))]
+        logs += [('actor_critic/critic_loss', np.mean(self.critic_loss))]
+        logs += [('actor_critic/actor_loss', np.mean(self.actor_loss))]
 
         logs += [('stats_o/mean', np.mean(self.sess.run([self.o_stats.mean])))]
         logs += [('stats_o/std', np.mean(self.sess.run([self.o_stats.std])))]
