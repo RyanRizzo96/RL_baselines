@@ -16,7 +16,7 @@ DEFAULT_ENV_PARAMS = {
 
 DEFAULT_PARAMS = {
     # env
-    'max_u': 1.,  # max absolute value of actions on different coordinates
+    'action_scale': 1.,  # max absolute value of actions on different coordinates
 
     # ddpg
     'layers': 3,  # number of layers in the critic/actor networks
@@ -26,7 +26,7 @@ DEFAULT_PARAMS = {
     'pi_lr': 0.001,  # actor learning rate
     'buffer_size': int(1E6),  # (int) the max number of transitions to store, size of the replay buffer
     'polyak': 0.95,  # polyak averaging coefficient
-    'action_l2': 1.0,  # quadratic penalty on actions (before rescaling by max_u)
+    'action_l2': 1.0,  # quadratic penalty on actions (before rescaling by action_scale')
     'clip_obs': 200.,
     'scope': 'ddpg',  # can be tweaked for testing
     'relative_goals': False,
@@ -43,7 +43,7 @@ DEFAULT_PARAMS = {
     'random_eps': 0.3,  # (float) Probability of taking a random action (as in an epsilon-greedy strategy)
                         # This is not needed for DDPG normally but can help exploring when using HER + DDPG.
                         # This hack was present in the original OpenAI Baselines repo (DDPG + HER)
-    'noise_eps': 0.2,   # std of gaussian noise added to not-completely-random actions as a percentage of max_u
+    'noise_eps': 0.2,   # std of gaussian noise added to not-completely-random actions as a percentage of action_scale'
 
     # HER
     'replay_strategy': 'future',  # supported modes: future, none
@@ -112,7 +112,7 @@ def prepare_params(kwargs):
     assert hasattr(tmp_env, '_max_episode_steps')
     kwargs['T'] = tmp_env._max_episode_steps
 
-    kwargs['max_u'] = np.array(kwargs['max_u']) if isinstance(kwargs['max_u'], list) else kwargs['max_u']
+    kwargs['action_scale'] = np.array(kwargs['action_scale']) if isinstance(kwargs['action_scale'], list) else kwargs['action_scale']
     kwargs['gamma'] = 1. - 1. / kwargs['T']
     if 'lr' in kwargs:
         kwargs['pi_lr'] = kwargs['lr']
@@ -122,7 +122,7 @@ def prepare_params(kwargs):
                  'network_class',
                  'polyak',
                  'batch_size', 'Q_lr', 'pi_lr',
-                 'norm_eps', 'norm_clip', 'max_u',
+                 'norm_eps', 'norm_clip', 'action_scale',
                  'action_l2', 'clip_obs', 'scope', 'relative_goals']:
         ddpg_params[name] = kwargs[name]
         kwargs['_' + name] = kwargs[name]

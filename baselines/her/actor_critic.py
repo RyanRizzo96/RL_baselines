@@ -4,7 +4,7 @@ from baselines.her.util import store_args, create_nerual_net
 
 class ActorCritic:
     @store_args
-    def __init__(self, inputs_tf, dimo, dimg, dimu, max_u, o_stats, g_stats, hidden, layers,
+    def __init__(self, inputs_tf, dimo, dimg, dimu, action_scale, o_stats, g_stats, hidden, layers,
                  **kwargs):
         """The actor-critic network and related training code.
         Args:
@@ -13,7 +13,7 @@ class ActorCritic:
             dimo (int): the dimension of the observations
             dimg (int): the dimension of the goals
             dimu (int): the dimension of the actions
-            max_u (float): the maximum magnitude of actions; action outputs will be scaled
+            action_scale (float): the maximum magnitude of actions; action outputs will be scaled
                 accordingly
             o_stats (baselines.her.Normalizer): normalizer for observations
             g_stats (baselines.her.Normalizer): normalizer for goals
@@ -22,34 +22,34 @@ class ActorCritic:
         """
 
         # Calls util.py stpre_args(method)
-        self.o_tf = inputs_tf['o']
-        self.g_tf = inputs_tf['g']
-        self.u_tf = inputs_tf['u']
+        self.obs = inputs_tf['o']
+        self.goals = inputs_tf['g']
+        self.actions = inputs_tf['u']
         print("INIT Actor-Critic with", hidden, "hidden units and ", layers, "hidden layers")
-        # print("inputs_tf['u']", self.u_tf)
+        # print("inputs_tf['u']", self.actions)
         # print("inputs_tf['o']", self.o_tf)
-        # print("inputs_tf['g']", self.g_tf)
+        # print("inputs_tf['g']", self.goals)
 
         # Prepare inputs for actor and critic.
-        o = self.o_stats.normalize(self.o_tf)
-        g = self.g_stats.normalize(self.g_tf)
+        observations = self.o_stats.normalize(self.obs)
+        goals = self.g_stats.normalize(self.goals)
 
         # Actor receives observation and goal to improve policy
-        input_actor = tf.concat(axis=1, values=[o, g])  # for actor
+        input_actor = tf.concat(axis=1, values=[observations, goals])  # for actor
 
         # Creates actor Actor network
         with tf.variable_scope('pi'):
-            self.actor_tf = self.max_u * tf.tanh(create_nerual_net(
+            self.actor_tf = self.action_scale * tf.tanh(create_nerual_net(
                 input_actor, [self.hidden] * self.layers + [self.dimu]))
 
         # Creates actor Critic network
         with tf.variable_scope('Q'):
             # Critic receives obs, goals from env and output of actor as inputs
-            input_critic = tf.concat(axis=1, values=[o, g, self.actor_tf / self.max_u])
+            input_critic_actor = tf.concat(axis=1, values=[observations, goals, self.actor_tf / self.action_scale])
             # For policy training
-            self.critic_with_actor_tf = create_nerual_net(input_critic, [self.hidden] * self.layers + [1])
+            self.critic_with_actor_tf = create_nerual_net(input_critic_actor, [self.hidden] * self.layers + [1])
 
             # for Critic - Value Function training
-            input_critic = tf.concat(axis=1, values=[o, g, self.u_tf / self.max_u])
+            input_critic = tf.concat(axis=1, values=[observations, goals, self.actions / self.action_scale])
             self._input_critic = input_critic  # exposed for tests
             self.critic_tf = create_nerual_net(input_critic, [self.hidden] * self.layers + [1], reuse=True)
