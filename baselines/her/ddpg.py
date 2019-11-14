@@ -23,7 +23,7 @@ global DEMO_BUFFER #buffer for demonstrations
 class DDPG(object):
     @store_args
     def __init__(self, input_dims, buffer_size, hidden, layers, network_class, polyak, batch_size,
-                 Q_lr, pi_lr, norm_eps, norm_clip, max_u, action_l2, clip_obs, scope, T,
+                 Q_lr, pi_lr, norm_eps, norm_clip, action_scale, action_l2, clip_obs, scope, T,
                  rollout_batch_size, subtract_goals, relative_goals, clip_pos_returns, clip_return,
                  bc_loss, q_filter, num_demo, demo_batch_size, prm_loss_weight, aux_loss_weight,
                  sample_transitions, gamma, reuse=False, **kwargs):
@@ -43,7 +43,7 @@ class DDPG(object):
             :param pi_lr (float): learning rate for the pi (actor) network
             :param norm_eps (float): a small value used in the normalizer to avoid numerical instabilities
             :param norm_clip (float): normalized inputs are clipped to be in [-norm_clip, norm_clip]
-            :param max_u (float): maximum action magnitude, i.e. actions are in [-max_u, max_u]
+            :param action_scale(float): maximum action magnitude, i.e. actions are in [-max_u, max_u]
             :param action_l2 (float): coefficient for L2 penalty on the actions
             :param clip_obs (float): clip observations before normalization to be in [-clip_obs, clip_obs]
             :param scope (str): the scope used for the TensorFlow graph
@@ -111,7 +111,7 @@ class DDPG(object):
         DEMO_BUFFER = ReplayBuffer(buffer_shapes, buffer_size, self.T, self.sample_transitions)
 
     def _random_action(self, n):
-        return np.random.uniform(low=-self.max_u, high=self.max_u, size=(n, self.dimu))
+        return np.random.uniform(low=-self.action_scale, high=self.action_scale, size=(n, self.dimu))
 
     def _preprocess_og(self, o, ag, g):
         if self.relative_goals:  # no self.relative_goals
@@ -148,9 +148,9 @@ class DDPG(object):
 
         # feed
         agent_feed = {
-            policy.o_tf: o.reshape(-1, self.dimo),
-            policy.g_tf: g.reshape(-1, self.dimg),
-            policy.u_tf: np.zeros((o.size // self.dimo, self.dimu), dtype=np.float32)
+            policy.obs: o.reshape(-1, self.dimo),
+            policy.goals: g.reshape(-1, self.dimg),
+            policy.actions: np.zeros((o.size // self.dimo, self.dimu), dtype=np.float32)
         }
 
         # Evaluating policy weights with agent information
@@ -160,9 +160,9 @@ class DDPG(object):
 
         # action postprocessing
         action = ret[0]
-        noise = noise_eps * self.max_u * np.random.randn(*action.shape)  # gaussian noise
+        noise = noise_eps * self.action_scale * np.random.randn(*action.shape)  # gaussian noise
         action += noise
-        action = np.clip(action, -self.max_u, self.max_u)
+        action = np.clip(action, -self.action_scale, self.action_scale)
         action += np.random.binomial(1, random_eps, action.shape[0]).reshape(-1, 1) * (self._random_action(action.shape[0]) - action)  # eps-greedy
         if action.shape[0] == 1:
             action = action[0]
@@ -335,7 +335,7 @@ class DDPG(object):
         return res
 
     def _create_network(self, reuse=False):
-        logger.info("Creating a DDPG agent with action space %d x %s..." % (self.dimu, self.max_u))
+        logger.info("Creating a DDPG agent with action space %d x %s..." % (self.dimu, self.action_scale))
         self.sess = tf_util.get_session()
 
         # running averages
@@ -410,7 +410,7 @@ class DDPG(object):
 
         print("Not training with demonstration")
         self.actor_loss_tf = -tf.reduce_mean(self.main.critic_with_actor_tf)
-        self.actor_loss_tf += self.action_l2 * tf.reduce_mean(tf.square(self.main.actor_tf / self.max_u))
+        self.actor_loss_tf += self.action_l2 * tf.reduce_mean(tf.square(self.main.actor_tf / self.action_scale))
 
         # Constructs symbolic derivatives of sum of critic_loss_tf vs _vars('main/Q')
         critic_grads_tf = tf.gradients(self.critic_loss_tf, self._vars('main/Q'))
