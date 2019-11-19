@@ -52,6 +52,7 @@ def train(*, policy, rollout_worker, evaluator,
                 c_loss, a_loss = policy.ddpg_train()
                 # print("actor loss: ", a_loss)
                 # print("critic loss: ", c_loss)
+            print("After {} batches, updating target net", n_batches)
             policy.ddpg_update_target_net()
 
             critic_loss_avg = np.mean(c_loss)
