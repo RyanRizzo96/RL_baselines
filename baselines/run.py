@@ -75,7 +75,7 @@ def train(args, extra_args):
         if alg_kwargs.get('network') is None:
             alg_kwargs['network'] = get_default_network(env_type)
 
-    print('Training {} on {}:{} with arguments \n{}'.format(args.alg, env_type, env_id, alg_kwargs))
+    print('baselines.run --- Training {} on {}:{} with arguments \n{}'.format(args.alg, env_type, env_id, alg_kwargs))
 
     # Add tensorboard to here?
     model = learn(
@@ -205,15 +205,19 @@ def configure_logger(log_path, **kwargs):
 def main(args):
     # configure logger, disable logging in child MPI processes (with rank > 0)
 
+    print("Baselines.run -- configure logger, disable logging in child MPI processes (with rank > 0)")
+
     arg_parser = common_arg_parser()
     args, unknown_args = arg_parser.parse_known_args(args)
     extra_args = parse_cmdline_kwargs(unknown_args)
 
     if MPI is None or MPI.COMM_WORLD.Get_rank() == 0:
+        print("Baselines.run -- MPI rank == 0 or None")
         rank = 0
         configure_logger(args.log_path)
     else:
         rank = MPI.COMM_WORLD.Get_rank()
+        print("Baselines.run -- MPI rank: ", rank)
         configure_logger(args.log_path, format_strs=[])
 
     # All execution passes through here
