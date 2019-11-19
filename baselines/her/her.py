@@ -52,7 +52,8 @@ def train(*, policy, rollout_worker, evaluator,
                 c_loss, a_loss = policy.ddpg_train()
                 # print("actor loss: ", a_loss)
                 # print("critic loss: ", c_loss)
-            print("After {} batches, updating target net", n_batches)
+
+            print("After {} training cycles, updating target net".format(n_batches))
             policy.ddpg_update_target_net()
 
             critic_loss_avg = np.mean(c_loss)
@@ -119,10 +120,14 @@ def learn(*, network, env, total_timesteps,
     # Check if there are any overriding params
     override_params = override_params or {}
 
+    print("-----------------------------LEARN-----------------------------")
+
     # Check for MPI workers, if not none check rank and number of CPU's
     if MPI is not None:
         rank = MPI.COMM_WORLD.Get_rank()
+        print("MPI RANK: ", rank)
         num_cpu = MPI.COMM_WORLD.Get_size()
+        print("num_cpu RANK: ", num_cpu)
 
     # Seed everything.
     rank_seed = seed + 1000000 * rank if seed is not None else None
