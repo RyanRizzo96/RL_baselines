@@ -33,7 +33,7 @@ class RolloutWorker:
         assert self.T > 0
 
         self.info_keys = [key.replace('info_', '') for key in dims.keys() if key.startswith('info_')]
-        print(dims.items())  # prints keys and values
+        print("dims.items() ", dims.items())  # prints keys and values
 
         self.success_history = deque(maxlen=history_len)
         self.Q_history = deque(maxlen=history_len)
@@ -44,8 +44,8 @@ class RolloutWorker:
         self.clear_history()
         self.episode_counter = 0
         self.episode_reward = 0
-        print(type(self.episode_reward))
-        print(type(self.episode_counter))
+        print("Episode Reward: ", type(self.episode_reward))
+        print("Episode Counter: ", type(self.episode_counter))
 
     def reset_all_rollouts(self):
         self.obs_dict = self.venv.reset()
@@ -54,9 +54,11 @@ class RolloutWorker:
         self.g = self.obs_dict['desired_goal']
 
     def generate_rollouts(self):
+
         """Performs `rollout_batch_size` rollouts in parallel for time horizon `T` with the current
         policy acting on it accordingly.
         """
+        print("Generating rollouts")
         self.reset_all_rollouts()
 
         # compute observations. Initialize array of zeros
@@ -181,6 +183,8 @@ class RolloutWorker:
 
         self.n_episodes += self.rollout_batch_size
 
+        print("Rollout Done")
+
         return convert_episode_to_batch_major(episode)
 
     def clear_history(self):
@@ -215,7 +219,7 @@ class RolloutWorker:
         # print(np.mean(self.success_history))
 
         logs += [('avg_episode_reward', np.mean(self.reward_history))]
-        print(np.mean(self.reward_history))
+        print("Inside Log", np.mean(self.reward_history))
 
         if self.compute_Q:  # Evaluator only
             logs += [('mean_Q_val', np.mean(self.Q_history))]

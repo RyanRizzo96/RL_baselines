@@ -43,6 +43,7 @@ def train(*, policy, rollout_worker, evaluator,
         # train
         rollout_worker.clear_history()
         for _ in range(n_cycles):
+            print("Rollout Worker")
             episode = rollout_worker.generate_rollouts()    # First we generate a rollout then we store it
             policy.ddpg_store_episode(episode)
 
@@ -62,6 +63,7 @@ def train(*, policy, rollout_worker, evaluator,
         # test
         evaluator.clear_history()
         for _ in range(n_test_rollouts):
+            print("Evaluator")
             evaluator.generate_rollouts()
 
         # record logs
@@ -94,6 +96,8 @@ def train(*, policy, rollout_worker, evaluator,
         MPI.COMM_WORLD.Bcast(root_uniform, root=0)
         if rank != 0:
             assert local_uniform[0] != root_uniform[0]
+
+    print("Training Done")
 
     return policy
 
