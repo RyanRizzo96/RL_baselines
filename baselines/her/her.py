@@ -43,7 +43,7 @@ def train(*, policy, rollout_worker, evaluator,
         # train
         rollout_worker.clear_history()
         for _ in range(n_cycles):
-            print("Rollout Worker")
+            print("Rollout Worker - generating rollouts")
             episode = rollout_worker.generate_rollouts()    # First we generate a rollout then we store it
             policy.ddpg_store_episode(episode)
 
@@ -63,7 +63,7 @@ def train(*, policy, rollout_worker, evaluator,
         # test
         evaluator.clear_history()
         for _ in range(n_test_rollouts):
-            print("Evaluator")
+            print("Evaluator - generating rollouts")
             evaluator.generate_rollouts()
 
         # record logs

@@ -58,7 +58,6 @@ class RolloutWorker:
         """Performs `rollout_batch_size` rollouts in parallel for time horizon `T` with the current
         policy acting on it accordingly.
         """
-        print("Generating rollouts")
         self.reset_all_rollouts()
 
         # compute observations. Initialize array of zeros
@@ -183,7 +182,7 @@ class RolloutWorker:
 
         self.n_episodes += self.rollout_batch_size
 
-        print("Rollout Done")
+        # print("Rollout Done")
 
         return convert_episode_to_batch_major(episode)
 
