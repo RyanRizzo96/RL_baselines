@@ -143,10 +143,11 @@ class DDPG(object):
 
         # values to compute
         policy_weights = [policy.actor_tf]
+
         if compute_Q:
             policy_weights += [policy.critic_with_actor_tf]
 
-        # feed
+        # feeds
         agent_feed = {
             policy.obs: o.reshape(-1, self.dimo),
             policy.goals: g.reshape(-1, self.dimg),

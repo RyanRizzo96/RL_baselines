@@ -77,7 +77,7 @@ class RolloutWorker:
         info_values = [np.empty((self.T - 1, self.rollout_batch_size, self.dims['info_' + key]), np.float32) for key in self.info_keys]
         Qs = []
 
-        # Do for rollout time horizon. This is equalt o 50 because episode length is 50
+        # Do for rollout time horizon. This is equal to 50 because episode length is 50
         # Not really much use if we go for a longer trajectory. If anything, shorten and test results
         # TODO: Shorten trajectory and check results
         for t in range(self.T):
@@ -98,9 +98,9 @@ class RolloutWorker:
                 # The non-batched case should still have a reasonable shape.
                 action = action.reshape(1, -1)
 
-            # o_new = np.empty((self.rollout_batch_size, self.dims['o']))
-            # ag_new = np.empty((self.rollout_batch_size, self.dims['g']))
-            # success = np.zeros(self.rollout_batch_size)
+            new_observation = np.empty((self.rollout_batch_size, self.dims['o']))
+            new_achieved_goal = np.empty((self.rollout_batch_size, self.dims['g']))
+            success = np.zeros(self.rollout_batch_size)
 
             # compute new states and observations
             obs_dict_new, reward, done, info = self.venv.step(action)
