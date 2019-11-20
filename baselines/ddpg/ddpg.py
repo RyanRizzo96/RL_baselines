@@ -109,8 +109,8 @@ def learn(network, env,
         eval_obs = eval_env.reset()
     nenvs = obs.shape[0]
 
-    episode_reward = np.zeros(nenvs, dtype = np.float32) #vector
-    episode_step = np.zeros(nenvs, dtype = int) # vector
+    episode_reward = np.zeros(nenvs, dtype = np.float32)  # vector
+    episode_step = np.zeros(nenvs, dtype = int)  # vector
     episodes = 0 #scalar
     t = 0 # scalar
 
