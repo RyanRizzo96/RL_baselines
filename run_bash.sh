@@ -16,14 +16,14 @@ export OPENAI_LOG_FORMAT=stdout,log,csv,tensorboard
 
 # for seed in $(seq 0 5); do OPENAI_LOGDIR=$HOME/logs/her_seed/run1-$seed python3 -m baselines.run --alg=her --env=FetchReach-v1 --num_timesteps=5000 --seed=$seed --nsteps=32; done
 
-python3 -m baselines.run --alg=ddpg --env=FetchReach-v1 --num_timesteps=5000
+# python3 -m baselines.run --alg=her --env=FetchReach-v1 --num_timesteps=5000
 
 # TEST 2
 # mpirun -np 19 python3 -m baselines.run --alg=her --env=FetchPickAndPlace-v1  --num_timesteps=1000000 --save_path=.models/her/FPAP_1mil_run3
 
 # mpirun -np 19 python3 -m baselines.run --alg=her --env=FetchPickAndPlace-v1  --num_timesteps=1000 --save_path=.models/her/ec2_test_5k_test
 
-# mpirun -np 19 python3 -m baselines.run --alg=her --env=FetchReach-v1 --num_timesteps=5000 --save_path=policies/her/FSLIDE_200k/standard
+mpirun -np 19 python3 -m baselines.run --alg=her --env=FetchReach-v1 --num_timesteps=5000 --save_path=policies/new_env/FSLIDE_200k/standard
 
 # mpirun -np 19 python3 -m baselines.run --num_env=5 --alg=her --env=FetchReach-v1 --num_timesteps=5000
 
