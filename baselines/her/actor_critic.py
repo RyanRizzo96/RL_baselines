@@ -37,7 +37,7 @@ class ActorCritic:
         # Actor receives observation and goal to improve policy
         input_actor = tf.concat(axis=1, values=[observations, goals])  # for actor
 
-        # Creates actor Actor network
+        # Creates actor Actor network (updated by Policy gradient)
         with tf.variable_scope('pi'):
             self.actor_tf = self.action_scale * tf.tanh(create_nerual_net(
                 input_actor, [self.hidden] * self.layers + [self.dimu]))
@@ -46,10 +46,14 @@ class ActorCritic:
         with tf.variable_scope('Q'):
             # Critic receives obs, goals from env and output of actor as inputs
             input_critic_actor = tf.concat(axis=1, values=[observations, goals, self.actor_tf / self.action_scale])
-            # For policy training
+
+            # For policy training - used to compute gradient for the actor.
             self.critic_with_actor_tf = create_nerual_net(input_critic_actor, [self.hidden] * self.layers + [1])
 
-            # for Critic - Value Function training
+            # Critic - Updated by TD Learning and minimizing the MBSE
+            # Used
             input_critic = tf.concat(axis=1, values=[observations, goals, self.actions / self.action_scale])
             self._input_critic = input_critic  # exposed for tests
             self.critic_tf = create_nerual_net(input_critic, [self.hidden] * self.layers + [1], reuse=True)
+
+            # critic_with_actor_tf - critic_tf for TD Learning

@@ -384,32 +384,10 @@ class DDPG(object):
 
         target_tf = tf.clip_by_value(batch_tf['r'] + self.gamma * target_critic_actor_tf, *clip_range)
 
-        # MSE of target_tf - critic_tf
+        # MSE of target_tf - critic_tf. This is the TD Learning step
         self.critic_loss_tf = tf.reduce_mean(tf.square(tf.stop_gradient(target_tf) - self.main.critic_tf))
 
-        # # train with demonstrations and use bc_loss and q_filter both
-        # if self.bc_loss == 1 and self.q_filter == 1:
-        #     print("Training with demonstration")
-        #     # where is the demonstrator action better than actor action according to the critic? choose samples only
-        #     maskMain = tf.reshape(tf.boolean_mask(self.main.critic_tf > self.main.critic_actor_tf, mask), [-1])
-        #     # define the cloning loss on the actor's actions only on the samples which adhere to the above masks
-        #     self.cloning_loss_tf = tf.reduce_sum(tf.square(tf.boolean_mask(tf.boolean_mask((self.main.actor_tf), mask), maskMain, axis=0) - tf.boolean_mask(tf.boolean_mask((batch_tf['u']), mask), maskMain, axis=0)))
-        #     # primary loss scaled by it's respective weight prm_loss_weight
-        #     self.actor_loss_tf = -self.prm_loss_weight * tf.reduce_mean(self.main.critic_actor_tf)
-        #     # L2 loss on action values scaled by the same weight prm_loss_weight
-        #     self.actor_loss_tf += self.prm_loss_weight * self.action_l2 * tf.reduce_mean(tf.square(self.main.actor_tf / self.max_u))
-        #     # adding the cloning loss to the actor loss as an auxiliary loss scaled by its weight aux_loss_weight
-        #     self.actor_loss_tf += self.aux_loss_weight * self.cloning_loss_tf
         #
-        # elif self.bc_loss == 1 and self.q_filter == 0: # train with demonstrations without q_filter
-        #     self.cloning_loss_tf = tf.reduce_sum(tf.square(tf.boolean_mask((self.main.actor_tf), mask) - tf.boolean_mask((batch_tf['u']), mask)))
-        #     self.actor_loss_tf = -self.prm_loss_weight * tf.reduce_mean(self.main.critic_actor_tf)
-        #     self.actor_loss_tf += self.prm_loss_weight * self.action_l2 * tf.reduce_mean(tf.square(self.main.actor_tf / self.max_u))
-        #     self.actor_loss_tf += self.aux_loss_weight * self.cloning_loss_tf
-        #
-        # else:  # If  not training with demonstrations
-
-        print("Not training with demonstration")
         self.actor_loss_tf = -tf.reduce_mean(self.main.critic_with_actor_tf)
         self.actor_loss_tf += self.action_l2 * tf.reduce_mean(tf.square(self.main.actor_tf / self.action_scale))
 
