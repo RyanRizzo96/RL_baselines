@@ -122,6 +122,7 @@ def learn(*, network, env, total_timesteps,
     # Check if there are any overriding params
     override_params = override_params or {}
 
+
     print("---------------------------------------------------LEARN---------------------------------------------------")
 
     # Check for MPI workers, if not none check rank and number of CPU's
