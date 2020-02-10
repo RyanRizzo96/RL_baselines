@@ -19,14 +19,20 @@ import os
 
 
 # Plotting with random seeds
-
 results = pu.load_results('/Users/ryanr/logs/her_seed/run_1')
 print(len(results))
 pu.plot_results(results)
-pu.plot_results(results, average_group=True)    # average over all seeds
-# pu.plot_results(results, average_group=True, split_fn=lambda _: '')     # plot both groups on the same graph
+# pu.plot_results(results, average_group=True)    # average over all seeds
+pu.plot_results(results, average_group=True, split_fn=lambda _: '')     # plot both groups on the same graph
+
+
+results = pu.load_results('/Users/ryanr/B.Eng/MCAST_Degree_4/Thesis/code/gym/RL_baselines/.log/run_1')
+print(len(results))
+pu.plot_results(results)
+# pu.plot_results(results, average_group=True)    # average over all seeds
+pu.plot_results(results, average_group=True, split_fn=lambda _: '')     # plot both groups on the same graph
 # We can disable either light shaded region (corresponding to standard deviation of the curves in the group)
 # or darker shaded region (corresponding to the error in mean estimate) by using shaded_std=False or shaded_
 # err=False options respectively.
-# pu.plot_results(results, average_group=True, split_fn=lambda _: '', shaded_std=False)
+pu.plot_results(results, average_group=True, split_fn=lambda _: '', shaded_std=False)
 plt.show()

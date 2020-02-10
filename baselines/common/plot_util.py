@@ -333,6 +333,7 @@ def plot_results(
     default_samples = 512
     if average_group:
         resample = resample or default_samples
+        print(resample)
 
     for (isplit, sk) in enumerate(sorted(sk2r.keys())):
         g2l = {}
@@ -362,11 +363,13 @@ def plot_results(
                     continue
                 color = COLORS[groups.index(group) % len(COLORS)]
                 origxs = [xy[0] for xy in xys]
+                print(type(origxs))
                 minxlen = min(map(len, origxs))
                 def allequal(qs):
                     return all((q==qs[0]).all() for q in qs[1:])
                 if resample:
-                    low  = max(x[0] for x in origxs)
+                    print(x[0])
+                    low = max(x[0] for x in origxs)
                     high = min(x[-1] for x in origxs)
                     usex = np.linspace(low, high, resample)
                     ys = []
