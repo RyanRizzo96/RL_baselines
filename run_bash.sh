@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 source ~/.virtualenvs/baseline_env/bin/activate
 
-# echo $HOME
+echo $HOME
+#/Users/ryanr/B.Eng/MCAST_Degree_4/Thesis/code/gym/RL_baselines/new_logs/initial_tests/FetchReach_5k/trial_logdir
 # echo $PWD
 
 export OPENAI_LOG_FORMAT=stdout,log,csv,tensorboard
@@ -23,7 +24,9 @@ export OPENAI_LOG_FORMAT=stdout,log,csv,tensorboard
 
 # mpirun -np 19 python3 -m baselines.run --alg=her --env=FetchPickAndPlace-v1  --num_timesteps=1000 --save_path=.models/her/ec2_test_5k_test
 
-mpirun -np 16 python3 -m baselines.run --alg=her --env=FetchReach-v1 --num_timesteps=5000 --save_path=new_policies/initial_tests/FetchReach_5k/trial_2 --log_path=new_logs/initial_tests/FetchReach_5k/trial_2
+#OPENAI_LOGDIR=$HOME/B.Eng/MCAST_Degree_4/Thesis/code/gym/RL_baselines/new_logs/initial_tests/FetchReach_5k/trial_logdir
+python3 -m baselines.run --alg=her --env=FetchReach-v1 --num_timesteps=5000 --save_path=new_policies/initial_tests/FetchReach_5k/trial_7 --log_path=new_logs/initial_tests/FetchReach_5k/trial_7
+# mpirun -np 16
 
 # mpirun -np 19 python3 -m baselines.run --num_env=5 --alg=her --env=FetchReach-v1 --num_timesteps=5000
 
