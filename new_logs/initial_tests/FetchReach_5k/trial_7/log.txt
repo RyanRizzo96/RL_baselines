@@ -1,0 +1,173 @@
+Logging to new_logs/initial_tests/FetchReach_5k/trial_7
+T: 50
+_Q_lr: 0.001
+_action_l2: 1.0
+_action_scale: 1.0
+_batch_size: 256
+_buffer_size: 1000000
+_clip_obs: 200.0
+_hidden: 256
+_layers: 3
+_network_class: baselines.her.actor_critic:ActorCritic
+_norm_clip: 5
+_norm_eps: 0.01
+_pi_lr: 0.001
+_polyak: 0.95
+_relative_goals: False
+_scope: ddpg
+aux_loss_weight: 0.0078
+bc_loss: 0
+ddpg_params: {'buffer_size': 1000000, 'hidden': 256, 'layers': 3, 'network_class': 'baselines.her.actor_critic:ActorCritic', 'polyak': 0.95, 'batch_size': 256, 'Q_lr': 0.001, 'pi_lr': 0.001, 'norm_eps': 0.01, 'norm_clip': 5, 'action_scale': 1.0, 'action_l2': 1.0, 'clip_obs': 200.0, 'scope': 'ddpg', 'relative_goals': False}
+demo_batch_size: 128
+env_name: FetchReach-v1
+gamma: 0.98
+make_env: <function prepare_params.<locals>.make_env at 0x7f242792bae8>
+n_batches: 40
+n_cycles: 10
+n_test_rollouts: 10
+noise_eps: 0.2
+num_demo: 100
+prm_loss_weight: 0.001
+q_filter: 0
+random_eps: 0.3
+replay_k: 4
+replay_strategy: future
+rollout_batch_size: 1
+test_with_polyak: False
+
+*** Warning ***
+You are running HER with just a single MPI worker. This will work, but the experiments that we report in Plappert et al. (2018, https://arxiv.org/abs/1802.09464) were obtained with --num_cpu 19. This makes a significant difference and if you are looking to reproduce those results, be aware of this. Please also refer to https://github.com/openai/baselines/issues/314 for further details.
+****************
+
+Creating a DDPG agent with action space 4 x 1.0...
+Training...
+---------------------------------------
+| stats_g/mean             | 0.85     |
+| stats_g/std              | 0.091    |
+| stats_o/mean             | 0.255    |
+| stats_o/std              | 0.0312   |
+| test/avg_episode_reward  | -10.6    |
+| test/episode             | 10       |
+| test/mean_Q_val          | -0.512   |
+| test/success_rate        | 0.9      |
+| train/avg_episode_reward | -41.9    |
+| train/episode            | 10       |
+| train/success_rate       | 0.2      |
+---------------------------------------
+---------------------------------------
+| stats_g/mean             | 0.857    |
+| stats_g/std              | 0.11     |
+| stats_o/mean             | 0.257    |
+| stats_o/std              | 0.0357   |
+| test/avg_episode_reward  | -17.9    |
+| test/episode             | 20       |
+| test/mean_Q_val          | -0.788   |
+| test/success_rate        | 0.7      |
+| train/avg_episode_reward | -19.4    |
+| train/episode            | 20       |
+| train/success_rate       | 0.8      |
+---------------------------------------
+---------------------------------------
+| stats_g/mean             | 0.868    |
+| stats_g/std              | 0.101    |
+| stats_o/mean             | 0.26     |
+| stats_o/std              | 0.0337   |
+| test/avg_episode_reward  | -5.9     |
+| test/episode             | 30       |
+| test/mean_Q_val          | -0.417   |
+| test/success_rate        | 1        |
+| train/avg_episode_reward | -16.3    |
+| train/episode            | 30       |
+| train/success_rate       | 0.6      |
+---------------------------------------
+---------------------------------------
+| stats_g/mean             | 0.871    |
+| stats_g/std              | 0.096    |
+| stats_o/mean             | 0.261    |
+| stats_o/std              | 0.0324   |
+| test/avg_episode_reward  | -4       |
+| test/episode             | 40       |
+| test/mean_Q_val          | -0.338   |
+| test/success_rate        | 1        |
+| train/avg_episode_reward | -14.1    |
+| train/episode            | 40       |
+| train/success_rate       | 1        |
+---------------------------------------
+---------------------------------------
+| stats_g/mean             | 0.872    |
+| stats_g/std              | 0.0927   |
+| stats_o/mean             | 0.262    |
+| stats_o/std              | 0.0317   |
+| test/avg_episode_reward  | -2.9     |
+| test/episode             | 50       |
+| test/mean_Q_val          | -0.363   |
+| test/success_rate        | 1        |
+| train/avg_episode_reward | -12.7    |
+| train/episode            | 50       |
+| train/success_rate       | 0.8      |
+---------------------------------------
+---------------------------------------
+| stats_g/mean             | 0.87     |
+| stats_g/std              | 0.092    |
+| stats_o/mean             | 0.261    |
+| stats_o/std              | 0.0316   |
+| test/avg_episode_reward  | -1.3     |
+| test/episode             | 60       |
+| test/mean_Q_val          | -0.174   |
+| test/success_rate        | 1        |
+| train/avg_episode_reward | -9.9     |
+| train/episode            | 60       |
+| train/success_rate       | 1        |
+---------------------------------------
+---------------------------------------
+| stats_g/mean             | 0.869    |
+| stats_g/std              | 0.0902   |
+| stats_o/mean             | 0.261    |
+| stats_o/std              | 0.0313   |
+| test/avg_episode_reward  | -1.8     |
+| test/episode             | 70       |
+| test/mean_Q_val          | -0.185   |
+| test/success_rate        | 1        |
+| train/avg_episode_reward | -7.9     |
+| train/episode            | 70       |
+| train/success_rate       | 1        |
+---------------------------------------
+---------------------------------------
+| stats_g/mean             | 0.868    |
+| stats_g/std              | 0.0899   |
+| stats_o/mean             | 0.261    |
+| stats_o/std              | 0.0313   |
+| test/avg_episode_reward  | -1.8     |
+| test/episode             | 80       |
+| test/mean_Q_val          | -0.16    |
+| test/success_rate        | 1        |
+| train/avg_episode_reward | -10.2    |
+| train/episode            | 80       |
+| train/success_rate       | 0.8      |
+---------------------------------------
+---------------------------------------
+| stats_g/mean             | 0.871    |
+| stats_g/std              | 0.0898   |
+| stats_o/mean             | 0.261    |
+| stats_o/std              | 0.0313   |
+| test/avg_episode_reward  | -1.2     |
+| test/episode             | 90       |
+| test/mean_Q_val          | -0.0899  |
+| test/success_rate        | 1        |
+| train/avg_episode_reward | -11.8    |
+| train/episode            | 90       |
+| train/success_rate       | 1        |
+---------------------------------------
+---------------------------------------
+| stats_g/mean             | 0.871    |
+| stats_g/std              | 0.089    |
+| stats_o/mean             | 0.261    |
+| stats_o/std              | 0.0311   |
+| test/avg_episode_reward  | -1.9     |
+| test/episode             | 100      |
+| test/mean_Q_val          | -0.143   |
+| test/success_rate        | 1        |
+| train/avg_episode_reward | -8.3     |
+| train/episode            | 100      |
+| train/success_rate       | 1        |
+---------------------------------------
