@@ -44,8 +44,8 @@ class RolloutWorker:
         self.clear_history()
         self.episode_counter = 0
         self.episode_reward = 0
-        print("Episode Reward: ", type(self.episode_reward))
-        print("Episode Counter: ", type(self.episode_counter))
+        # print("Episode Reward: ", type(self.episode_reward))
+        # print("Episode Counter: ", type(self.episode_counter))
 
     def reset_all_rollouts(self):
         self.obs_dict = self.venv.reset()
@@ -218,7 +218,7 @@ class RolloutWorker:
         # print(np.mean(self.success_history))
 
         logs += [('avg_episode_reward', np.mean(self.reward_history))]
-        print("Inside Log", np.mean(self.reward_history))
+        # print("Inside Log", np.mean(self.reward_history))
 
         if self.compute_Q:  # Evaluator only
             logs += [('mean_Q_val', np.mean(self.Q_history))]

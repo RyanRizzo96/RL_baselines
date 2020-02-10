@@ -25,7 +25,7 @@ class ActorCritic:
         self.obs = inputs_tf['o']
         self.goals = inputs_tf['g']
         self.actions = inputs_tf['u']
-        print("INIT Actor-Critic with", hidden, "hidden units and ", layers, "hidden layers")
+        # print("INIT Actor-Critic with", hidden, "hidden units and ", layers, "hidden layers")
         # print("inputs_tf['u']", self.actions)
         # print("inputs_tf['o']", self.o_tf)
         # print("inputs_tf['g']", self.goals)

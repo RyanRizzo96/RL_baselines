@@ -53,8 +53,8 @@ def train(*, policy, rollout_worker, evaluator,
                 # print("actor loss: ", a_loss)
                 # print("critic loss: ", c_loss)
 
-            print("After {} Rollout Worker - generating rollouts".format(n_cycles))
-            print("After {} x {} training cycles, updating target net".format(n_cycles, n_batches))
+            # print("After {} Rollout Worker - generating rollouts".format(n_cycles))
+            # print("After {} x {} training cycles, updating target net".format(n_cycles, n_batches))
             policy.ddpg_update_target_net()
 
             critic_loss_avg = np.mean(c_loss)
@@ -68,7 +68,7 @@ def train(*, policy, rollout_worker, evaluator,
         for _ in range(n_test_rollouts):
             # print("Evaluator - generating rollouts")
             evaluator.generate_rollouts()
-        print("After {} Evaluator - generating rollouts".format(n_test_rollouts))
+        # print("After {} Evaluator - generating rollouts".format(n_test_rollouts))
 
         # record logs
         # logger.record_tabular('epoch', epoch)
