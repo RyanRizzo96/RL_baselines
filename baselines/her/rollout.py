@@ -189,7 +189,7 @@ class RolloutWorker:
     def clear_history(self):
         """Clears all histories that are used for statistics
         """
-        print("New worker")
+        # print("New worker")
         self.episode_counter = 0
         self.success_history.clear()
         self.reward_history.clear()
