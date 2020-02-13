@@ -35,8 +35,6 @@ src
 MUJOCO_LOG.TXT
 *.lan
 *.txt
-*.csv
-*.json
 *.xls
 
 *.md
