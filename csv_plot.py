@@ -30,17 +30,19 @@ import csv
 # results = pu.load_results('/Users/ryanr/B.Eng/MCAST_Degree_4/Thesis/code/gym/RL_baselines/.log/run_1/6_layer')
 
 
-results = pu.load_results('/Users/ryanr/B.Eng/MCAST_Degree_4/Thesis/code/gym/RL_baselines/.log/run_1/testing_structure/aggregates/stats_gmean-tb-testing_structure.csv')
+results = pu.load_results('/Users/ryanr/B.Eng/MCAST_Degree_4/Thesis/code/gym/RL_baselines/.log/two_seeds')
 
 print(len(results))
 pu.plot_results(results)
-r = results[0]
-plt.plot(np.cumsum(r.monitor.l), pu.smooth(r.monitor.r, radius=10))
+plt.show()
+# r = results[0]
+# plt.plot(np.cumsum(r.monitor.l), pu.smooth(r.monitor.r, radius=10))
 
 pu.plot_results(results, average_group=True)    # average over all seeds
+plt.show()
 
 pu.plot_results(results, average_group=True, split_fn=lambda _: '')     # plot both groups on the same graph
-
+plt.show()
 # We can disable either light shaded region (corresponding to standard deviation of the curves in the group)
 # or darker shaded region (corresponding to the error in mean estimate) by using shaded_std=False or shaded_
 # err=False options respectively.
