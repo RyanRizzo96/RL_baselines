@@ -6,7 +6,8 @@ RLBaselines is built upon [OpenAI Baselines](https://github.com/openai/baselines
 
 # Improved Plotting
 
-1. Added `csv_aggregator.py` for easier and more intuitive plotting.
+1. Added [tensorboard-aggregator](https://github.com/Spenhouet/tensorboard-aggregator) to aggregate multiple tensorboard runs.
+2. Added `csv_aggregator.py` for easier and more intuitive plotting of mean and standard deviation.
 
 The shaded blue is the standard deviation from the mean, while the orange shade is the error in estimate of the mean. 
 
