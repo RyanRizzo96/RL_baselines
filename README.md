@@ -12,3 +12,7 @@ RLBaselines is built upon [OpenAI Baselines](https://github.com/openai/baselines
 The shaded blue is the standard deviation from the mean, while the orange shade is the error in estimate of the mean. 
 
 ![image](https://user-images.githubusercontent.com/31866965/74467100-bd87a380-4e98-11ea-930e-0ca0b5bead7d.png)
+
+3. Added `csv_plot.py` to improve ease of use in utilising baseline plotting functions.
+
+![image](https://user-images.githubusercontent.com/31866965/74468656-75b64b80-4e9b-11ea-8ff4-2755eb7aee26.png)
