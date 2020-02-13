@@ -2,7 +2,7 @@
 
 # Baselines
 
-RLBaselines is built upon OpenAI Baselines and uses improved documentation and code quality from Stable Baselines.
+RLBaselines is built upon [OpenAI Baselines](https://github.com/openai/baselines) and uses improved documentation and code quality from Stable Baselines. Follows OpenAI's installation guide to get started.
 
 # Improved Plotting
 
