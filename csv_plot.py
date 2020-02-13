@@ -3,6 +3,8 @@ from baselines.common import plot_util as pu
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import pandas as pd
+import csv
 
 # osprint(os.environ['OPENAI_LOGDIR'])
 
@@ -17,22 +19,31 @@ import os
 # plt.ylabel('Reward')
 # plt.show()
 
-
 # Plotting with random seeds
-results = pu.load_results('/Users/ryanr/logs/her_seed/run_1')
-print(len(results))
-pu.plot_results(results)
-# pu.plot_results(results, average_group=True)    # average over all seeds
-pu.plot_results(results, average_group=True, split_fn=lambda _: '')     # plot both groups on the same graph
+# results = pu.load_results('/Users/ryanr/logs/her_seed/run_1')
+# print(len(results))
+# pu.plot_results(results)
+# # pu.plot_results(results, average_group=True)    # average over all seeds
+# pu.plot_results(results, average_group=True, split_fn=lambda _: '')     # plot both groups on the same graph
 
 
-results = pu.load_results('/Users/ryanr/B.Eng/MCAST_Degree_4/Thesis/code/gym/RL_baselines/.log/run_1')
+# results = pu.load_results('/Users/ryanr/B.Eng/MCAST_Degree_4/Thesis/code/gym/RL_baselines/.log/run_1/6_layer')
+
+
+results = pu.load_results('/Users/ryanr/B.Eng/MCAST_Degree_4/Thesis/code/gym/RL_baselines/.log/run_1/testing_structure/aggregates/stats_gmean-tb-testing_structure.csv')
+
 print(len(results))
 pu.plot_results(results)
-# pu.plot_results(results, average_group=True)    # average over all seeds
+r = results[0]
+plt.plot(np.cumsum(r.monitor.l), pu.smooth(r.monitor.r, radius=10))
+
+pu.plot_results(results, average_group=True)    # average over all seeds
+
 pu.plot_results(results, average_group=True, split_fn=lambda _: '')     # plot both groups on the same graph
+
 # We can disable either light shaded region (corresponding to standard deviation of the curves in the group)
 # or darker shaded region (corresponding to the error in mean estimate) by using shaded_std=False or shaded_
 # err=False options respectively.
+
 pu.plot_results(results, average_group=True, split_fn=lambda _: '', shaded_std=False)
 plt.show()
