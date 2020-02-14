@@ -15,7 +15,8 @@ export OPENAI_LOG_FORMAT=stdout,log,csv,tensorboard
 
 # python3 -m baselines.run --alg=her --env=FetchPush-v1 --num_timesteps=0 --load_path=/Users/ryanr/B.Eng/MCAST_Degree_4/Thesis/code/baseline_code/baselines/policies/her/FPUSH_200k/standard --play
 
-for seed in $(seq 0 1); do OPENAI_LOGDIR=/home/ubuntu/RL_baselines/.log/two_seeds/FPUSH_200k-$seed mpirun -np 16 python3 -m baselines.run --alg=her --env=FetchPush-v1 --num_timesteps=100000 --seed=$seed --layers=3; done
+for seed in $(seq 0 2); do OPENAI_LOGDIR=/home/ubuntu/RL_baselines/.log/three_seeds/FPAP_200k-$seed mpirun -np 16 python3 -m baselines.run --alg=her --env=FetchPickAndPlace-v1 --num_timesteps=200000 --seed=$seed --layers=3; done
+for seed in $(seq 0 2); do OPENAI_LOGDIR=/home/ubuntu/RL_baselines/.log/three_seeds/FPSLIDE_200k-$seed mpirun -np 16 python3 -m baselines.run --alg=her --env=FetchSlide-v1 --num_timesteps=200000 --seed=$seed --layers=3; done
 # for seed in $(seq 0 5); do OPENAI_LOGDIR=/home/ubuntu/RL_baselines/.log/run_1/layers_6-$seed mpirun -np 16 python3 -m baselines.run --alg=her --env=FetchPush-v1 --num_timesteps=10000 --seed=$seed --layers=6; done
 
 # python3 -m baselines.run --alg=her --env=FetchReach-v1 --num_timesteps=5000

@@ -42,6 +42,9 @@ pu.plot_results(results, average_group=True)    # average over all seeds
 plt.show()
 
 pu.plot_results(results, average_group=True, split_fn=lambda _: '')     # plot both groups on the same graph
+plt.xlabel('Iteration Number')
+plt.ylabel('Reward')
+plt.title('Reward vs Iteration')
 plt.show()
 # We can disable either light shaded region (corresponding to standard deviation of the curves in the group)
 # or darker shaded region (corresponding to the error in mean estimate) by using shaded_std=False or shaded_
