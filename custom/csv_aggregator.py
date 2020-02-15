@@ -7,7 +7,7 @@ import csv
 
 headers = ['Mean', 'aMin', 'aMax', 'Median', 'std', 'var']
 df = pd.read_csv(
-    '/Users/ryanr/B.Eng/MCAST_Degree_4/Thesis/code/gym/RL_baselines/.log/two_seeds/aggregates/trainavg_episode_reward-tb-two_seeds.csv',
+    '/Users/ryanr/B.Eng/MCAST_Degree_4/Thesis/code/gym/RL_baselines/.log/two_seeds/run_2/aggregates/testsuccess_rate-tb-run_2.csv',
     sep=',',  dtype=float)
 
 # Preview the first 5 lines of the loaded data
