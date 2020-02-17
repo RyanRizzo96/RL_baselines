@@ -31,12 +31,12 @@ The shaded blue is the standard deviation from the mean, while the orange shade 
 
 # Fetch Slide
 
-- Underperforming when comparing to Andrychowicz et. al.
-![image](https://user-images.githubusercontent.com/31866965/74676584-9ab9ff80-51b6-11ea-94f4-533d3bd2f4be.png)
+- Underperforming when comparing to Andrychowicz et. al. Still need to average out.
+![image](https://user-images.githubusercontent.com/31866965/74676788-161bb100-51b7-11ea-99f5-411855d0138f.png)
 
 # Fetch Push
 
 - Overperforming, converging 50 times faster.
 ![image](https://user-images.githubusercontent.com/31866965/74676719-f6848880-51b6-11ea-8b3a-d89c638a5fa7.png)
 
-- Underperforming when comparing to Andrychowicz et. al.
+
