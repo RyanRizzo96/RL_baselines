@@ -23,3 +23,20 @@ The shaded blue is the standard deviation from the mean, while the orange shade 
 - Results are obtained 50 times faster in certain environments. Where is the flaw in my plotting or calculations? Anyone who can point this out, kindly open an issue. Greatly apprciated!
 
 ![image](https://user-images.githubusercontent.com/31866965/74676409-444cc100-51b6-11ea-93b8-2a9530ad4df2.png)
+
+# Fetch Pick and Place
+
+- Overperforming. Achieving results after 150k iterations.
+![image](https://user-images.githubusercontent.com/31866965/74676554-8970f300-51b6-11ea-947c-047e760fb6b6.png)
+
+# Fetch Slide
+
+- Underperforming when comparing to Andrychowicz et. al.
+![image](https://user-images.githubusercontent.com/31866965/74676584-9ab9ff80-51b6-11ea-94f4-533d3bd2f4be.png)
+
+# Fetch Push
+
+- Overperforming, converging 50 times faster.
+![image](https://user-images.githubusercontent.com/31866965/74676719-f6848880-51b6-11ea-8b3a-d89c638a5fa7.png)
+
+- Underperforming when comparing to Andrychowicz et. al.
