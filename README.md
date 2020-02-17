@@ -20,6 +20,6 @@ The shaded blue is the standard deviation from the mean, while the orange shade 
 
 # Why are results outperforming original baselines results? 
 
-- Results are obtained 50 times faster in certain environments. Where is the flaw in my plotting or calculations? Anyone who can point this out, knidly open an issue. Greatly apprciated!
+- Results are obtained 50 times faster in certain environments. Where is the flaw in my plotting or calculations? Anyone who can point this out, kindly open an issue. Greatly apprciated!
 
 ![image](https://user-images.githubusercontent.com/31866965/74676409-444cc100-51b6-11ea-93b8-2a9530ad4df2.png)
