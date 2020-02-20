@@ -75,6 +75,11 @@ class DDPG(object):
         self.dimg = input_dims['g']
         self.dimu = input_dims['u']
 
+        self.critic_loss_episode = []
+        self.actor_loss_episode = []
+        self.critic_loss_avg = []
+        self.actor_loss_avg = []
+
         # Prepare staging area for feeding data to the model.
         stage_shapes = OrderedDict()
         for key in sorted(self.input_dims.keys()):
@@ -315,12 +320,21 @@ class DDPG(object):
         # Update gradients for actor and critic networks
         self._update(Q_grad, pi_grad)
 
+        self.visual_actor_loss = 1 - self.actor_loss
+
+        self.critic_loss_episode.append(self.critic_loss)
+        self.actor_loss_episode.append(self.visual_actor_loss)
+
+        # print("Critic loss: ", self.critic_loss, " Actor loss: ", self.actor_loss)
         return self.critic_loss, np.mean(self.actor_loss)
 
     def _init_target_net(self):
         self.sess.run(self.init_target_net_op)
 
     def ddpg_update_target_net(self):
+        self.critic_loss_avg = np.mean(self.critic_loss_episode)
+        self.actor_loss_avg = np.mean(self.actor_loss_episode)
+
         self.sess.run(self.update_target_net_op)
 
     def clear_buffer(self):
@@ -433,13 +447,16 @@ class DDPG(object):
 
     def logs(self, prefix=''):
         logs = []
-        # logs += [('actor_critic/critic_loss', critic_loss_avg)]
-        # logs += [('actor_critic/actor_loss', actor_loss_avg)]
+        logs += [('actor_critic/critic_loss', self.critic_loss_avg)]
+        logs += [('actor_critic/actor_loss', self.actor_loss_avg)]
 
         logs += [('stats_o/mean', np.mean(self.sess.run([self.o_stats.mean])))]
         logs += [('stats_o/std', np.mean(self.sess.run([self.o_stats.std])))]
         logs += [('stats_g/mean', np.mean(self.sess.run([self.g_stats.mean])))]
         logs += [('stats_g/std', np.mean(self.sess.run([self.g_stats.std])))]
+
+        # logs += [('critic_loss', np.mean(self.sess.run([self.critic_loss])))]
+        # logs += [('actor_loss', np.mean(self.sess.run([self.actor_loss])))]
 
         if prefix != '' and not prefix.endswith('/'):
             return [(prefix + '/' + key, val) for key, val in logs]

@@ -59,8 +59,8 @@ def train(*, policy, rollout_worker, evaluator,
 
             critic_loss_avg = np.mean(c_loss)
             actor_loss_avg = np.mean(a_loss)
-            # print("actor loss: ", actor_loss_avg)
-            # print("critic loss: ", critic_loss_avg)
+            # print("actor loss: ", actor_loss_episode)
+            # print("critic loss: ", critic_loss_episode)
 
         # TODO: What is difference between rollout_worker and evaluator
         # test

@@ -30,7 +30,7 @@ import csv
 # results = pu.load_results('/Users/ryanr/B.Eng/MCAST_Degree_4/Thesis/code/gym/RL_baselines/.log/run_1/6_layer')
 
 
-results = pu.load_results('/Users/ryanr/B.Eng/MCAST_Degree_4/Thesis/code/gym/RL_baselines/.log/three_seeds')
+results = pu.load_results('/Users/ryanr/B.Eng/MCAST_Degree_4/Thesis/code/gym/RL_baselines/.log/two_seeds/run_2/aggregates/testsuccess_rate-tb-run_2.csv')
 
 print(len(results))
 pu.plot_results(results)
