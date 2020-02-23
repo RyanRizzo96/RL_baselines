@@ -26,6 +26,6 @@ The shaded blue is the standard deviation from the mean, while the orange shade 
 
 - [ ] Plot results using seaborn 
 - [ ] Compare results in a more professional manner
-- [ ] Implement Prioritzied Sequence Experience Replay
+- [ ] Implement Prioritized Sequence Experience Replay
 - [ ] Implement Energy Based Prioritization
 - [ ] Compare the above
