@@ -18,4 +18,14 @@ The shaded blue is the standard deviation from the mean, while the orange shade 
 ![image](https://user-images.githubusercontent.com/31866965/74468656-75b64b80-4e9b-11ea-8ff4-2755eb7aee26.png)
 
 
+# Results
 
+![image](https://user-images.githubusercontent.com/31866965/75112455-4eead880-5644-11ea-9bd9-76bc80de7fd9.png)
+
+# Road map
+
+- [ ] Plot results using seaborn 
+- [ ] Compare results in a more professional manner
+- [ ] Implement Priority Sequence Experience Replay
+- [ ] Implement Energy Based Prioritisation
+- [ ] Compare the above
