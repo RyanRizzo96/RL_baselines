@@ -44,7 +44,7 @@ plt.fill_between(x, y-error, y+error, color='C1', alpha=0.3, interpolate=True)
 plt.show()
 
 # Interpolation
-xnew = np.linspace(x.min(), x.max(), 200)
+xnew = np.linspace(x.min(), x.max(), 40)
 spl = make_interp_spline(x, y, k=3)  # type: BSpline
 # Smoothing mean
 mean_smooth = spl(xnew)

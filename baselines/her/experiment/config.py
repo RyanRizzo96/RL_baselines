@@ -110,8 +110,8 @@ def prepare_params(kwargs):
     kwargs['make_env'] = make_env
     tmp_env = cached_make_env(kwargs['make_env'])
     assert hasattr(tmp_env, '_max_episode_steps')
-    kwargs['T'] = tmp_env._max_episode_steps
-
+    kwargs['T'] = tmp_env._max_episode_steps # Setting time horizon
+    kwargs['T'] = 40
     kwargs['action_scale'] = np.array(kwargs['action_scale']) if isinstance(kwargs['action_scale'], list) else kwargs['action_scale']
     kwargs['gamma'] = 1. - 1. / kwargs['T']
     if 'lr' in kwargs:

@@ -25,6 +25,7 @@ class ReplayBuffer:
         # memory management
         self.current_size = 0
         self.n_transitions_stored = 0
+        self.count = 0
 
         self.lock = threading.Lock()
 
@@ -56,6 +57,8 @@ class ReplayBuffer:
     def store_episode(self, episode_batch):
         """episode_batch: array(batch_size x (T or T+1) x dim_key)
         """
+        self.count += 1
+        print(self.count)
         batch_sizes = [len(episode_batch[key]) for key in episode_batch.keys()]
         assert np.all(np.array(batch_sizes) == batch_sizes[0])
         batch_size = batch_sizes[0]
